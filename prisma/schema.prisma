@@ -1,0 +1,142 @@
+// ClosetAI database schema
+// Dev default: SQLite (zero config). Swap `provider` to "postgresql" and set
+// DATABASE_URL to a Postgres connection string for production — the schema
+// below is Postgres-compatible as written.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  onboarded    Boolean  @default(false)
+
+  // Onboarding + evolving style profile, stored as JSON strings (SQLite has
+  // no native JSON/array type). Parsed/serialized in lib/styleProfile.ts.
+  preferredStyles   String  @default("[]") // e.g. ["Minimal","Streetwear"]
+  usualClothing     String  @default("")
+  occasions         String  @default("[]") // e.g. ["Everyday","Work"]
+  fitPreference     String  @default("Regular") // Fitted | Regular | Oversized
+  colorsLove        String  @default("[]")
+  colorsAvoid       String  @default("[]")
+  shoePreference    String  @default("[]")
+  adventurousness   Int     @default(3) // 1-5
+  comfortImportance Int     @default(3) // 1-5
+  fashionImportance Int     @default(3) // 1-5
+  formalImportance  Int     @default(3) // 1-5
+
+  // Learned weights the Style Learner nudges over time based on feedback.
+  learnedPreferences String @default("{}")
+
+  city String? // manually entered, for weather-aware recommendations
+
+  clothingItems ClothingItem[]
+  outfits       Outfit[]
+  feedback      OutfitFeedback[]
+  wearHistory   WearHistory[]
+}
+
+model ClothingItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  name      String
+  category  String // Tops | Bottoms | Outerwear | Shoes | Accessories
+  subcategory String
+
+  primaryColor    String
+  secondaryColors String  @default("[]")
+  pattern         String  @default("Solid")
+  material        String?
+  fit             String  @default("Regular")
+  style           String  @default("Casual")
+  formality       Int     @default(2) // 1-5
+  season          String  @default("[]") // e.g. ["Spring","Summer"]
+  sleeveLength    String?
+  occasions       String  @default("[]")
+  pairings        String  @default("[]")
+  tags            String  @default("[]")
+
+  // Fields the AI could not confidently determine — the frontend flags these
+  // for the user to confirm/edit.
+  uncertainFields String  @default("[]")
+  userEdited      Boolean @default(false)
+
+  isDemo      Boolean   @default(false)
+  wearCount   Int       @default(0)
+  lastWornAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  outfitItems OutfitItem[]
+
+  @@index([userId])
+}
+
+model Outfit {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occasion      String
+  style         String
+  explanation   String
+  styleMatch    Int      @default(0)
+  occasionMatch Int      @default(0)
+  colorHarmony  Int      @default(0)
+  overallScore  Int      @default(0)
+  adventureLevel Int     @default(3)
+  isSaved       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  items    OutfitItem[]
+  feedback OutfitFeedback[]
+  wears    WearHistory[]
+
+  @@index([userId])
+}
+
+model OutfitItem {
+  id             String       @id @default(cuid())
+  outfitId       String
+  outfit         Outfit       @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  clothingItemId String
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+  slot           String // top | bottom | outerwear | shoes | accessory
+
+  @@index([outfitId])
+  @@index([clothingItemId])
+}
+
+model OutfitFeedback {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId     String
+  outfit       Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  feedbackType String // like | dislike
+  reasons      String  @default("[]") // e.g. ["Too formal","Don't like the colours"]
+  comments     String?
+  createdAt    DateTime @default(now())
+
+  @@index([outfitId])
+}
+
+model WearHistory {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId String
+  outfit   Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  wornAt   DateTime @default(now())
+
+  @@index([userId])
+}

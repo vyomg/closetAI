@@ -1,0 +1,44 @@
+export type ClothingItemDTO = {
+  id: string;
+  imageUrl: string;
+  name: string;
+  category: string;
+  subcategory: string;
+  primaryColor: string;
+  secondaryColors: string[];
+  pattern: string;
+  material: string | null;
+  fit: string;
+  style: string;
+  formality: number;
+  season: string[];
+  sleeveLength: string | null;
+  occasions: string[];
+  pairings: string[];
+  tags: string[];
+  uncertainFields: string[];
+  userEdited: boolean;
+  isDemo: boolean;
+  wearCount: number;
+  lastWornAt: string | null;
+  createdAt: string;
+  slot?: string;
+};
+
+export type OutfitDTO = {
+  id: string;
+  occasion: string;
+  style: string;
+  explanation: string;
+  styleMatch: number;
+  occasionMatch: number;
+  colorHarmony: number;
+  overallScore: number;
+  adventureLevel: number;
+  isSaved: boolean;
+  createdAt: string;
+  lastWornAt?: string | null;
+  unmetConstraints?: string[];
+  feedback?: { feedbackType: string; reasons: string[] } | null;
+  items: ClothingItemDTO[];
+};

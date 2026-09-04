@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #faf8f4;
+  --paper-alt: #f2efe6;
+  --ink: #17160f;
+  --ink-soft: #3a382e;
+  --stone: #8a8574;
+  --line: #e6e1d3;
+  --accent: #17160f;
+  --accent-foreground: #faf8f4;
+  --success: #4a6741;
+  --warning: #a35b2f;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-paper: var(--paper);
+  --color-paper-alt: var(--paper-alt);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-stone: var(--stone);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+/* Subtle, tasteful motion only — no bouncing, no gradients */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+
+/* Thin, elegant scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
