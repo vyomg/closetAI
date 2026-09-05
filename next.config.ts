@@ -2,12 +2,21 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // Only ever serves same-origin files we generate ourselves (seeded demo
-    // wardrobe icons) or user photo uploads (raster, validated server-side)
-    // — safe to allow SVG rendering for the former.
+    // Allow SVG rendering for trusted, internally generated assets.
     dangerouslyAllowSVG: true,
+
     contentDispositionType: "inline",
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+
+    contentSecurityPolicy:
+      "default-src 'self'; script-src 'none'; sandbox;",
+
+    // Allow images stored in Vercel Blob.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
+    ],
   },
 };
 

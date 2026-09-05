@@ -1,4 +1,8 @@
-import { getAnthropicClient, CLAUDE_MODEL, extractJson } from "@/lib/anthropic";
+import {
+  getGeminiClient,
+  GEMINI_MODEL,
+  extractJson,
+} from "@/lib/anthropic";
 import type { StyleProfileData, LearnedPreferences } from "@/lib/types";
 
 export type WardrobeItemForAI = {
@@ -24,10 +28,10 @@ export type OutfitGenerationInput = {
   occasion: string;
   desiredStyle: string;
   notes: string;
-  adventureLevel: number; // 1-5
+  adventureLevel: number;
   weather: { tempC: number; condition: string } | null;
-  recentOutfitItemIds: string[][]; // most recent outfits, each an array of item ids
-  anchorItemId?: string; // "I want to wear..." — this item MUST be included
+  recentOutfitItemIds: string[][];
+  anchorItemId?: string;
 };
 
 export type OutfitGenerationResult = {
@@ -37,7 +41,7 @@ export type OutfitGenerationResult = {
   occasionMatch: number;
   colorHarmony: number;
   overallScore: number;
-  unmetConstraints: string[]; // e.g. "No formal shoes in wardrobe" if something couldn't be satisfied
+  unmetConstraints: string[];
 };
 
 const SYSTEM_PROMPT = `You are the Outfit Generator for ClosetAI, a digital wardrobe app. You build complete outfits using ONLY clothing items the user actually owns, which are provided to you as a structured wardrobe list — never invent items that aren't in that list.
@@ -71,7 +75,7 @@ Respond with ONLY a single JSON object, no prose, no markdown fences, matching e
 export async function generateOutfit(
   input: OutfitGenerationInput
 ): Promise<OutfitGenerationResult> {
-  const client = getAnthropicClient();
+  const client = getGeminiClient();
 
   const userPrompt = `Build one outfit from this wardrobe.
 
@@ -97,17 +101,20 @@ ${JSON.stringify(input.recentOutfitItemIds)}
 
 Respond with the JSON object only.`;
 
-  const message = await client.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userPrompt }],
+  const response = await client.models.generateContent({
+    model: GEMINI_MODEL,
+    contents: userPrompt,
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      responseMimeType: "application/json",
+    },
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude returned no text content for outfit generation");
+  const text = response.text;
+
+  if (!text) {
+    throw new Error("Gemini returned no text content for outfit generation");
   }
 
-  return extractJson<OutfitGenerationResult>(textBlock.text);
+  return extractJson<OutfitGenerationResult>(text);
 }

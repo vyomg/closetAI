@@ -1,4 +1,8 @@
-import { getAnthropicClient, CLAUDE_MODEL, extractJson } from "@/lib/anthropic";
+import {
+  getGeminiClient,
+  GEMINI_MODEL,
+  extractJson,
+} from "@/lib/anthropic";
 import type { StyleProfileData } from "@/lib/types";
 import type { WardrobeItemForAI } from "@/lib/prompts/outfitGenerator";
 
@@ -10,25 +14,32 @@ export async function explainOutfit(params: {
   style: string;
   styleProfile: StyleProfileData;
 }): Promise<string> {
-  const client = getAnthropicClient();
+  const client = getGeminiClient();
 
-  const message = await client.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 512,
-    system: SYSTEM_PROMPT,
-    messages: [
-      {
-        role: "user",
-        content: `OUTFIT ITEMS:\n${JSON.stringify(params.items, null, 2)}\n\nOCCASION: ${params.occasion}\nSTYLE: ${params.style}\nUSER STYLE PROFILE:\n${JSON.stringify(params.styleProfile, null, 2)}`,
-      },
-    ],
+  const userPrompt = `OUTFIT ITEMS:
+${JSON.stringify(params.items, null, 2)}
+
+OCCASION: ${params.occasion}
+STYLE: ${params.style}
+
+USER STYLE PROFILE:
+${JSON.stringify(params.styleProfile, null, 2)}`;
+
+  const response = await client.models.generateContent({
+    model: GEMINI_MODEL,
+    contents: userPrompt,
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      responseMimeType: "application/json",
+    },
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude returned no text content for outfit explanation");
+  const text = response.text;
+
+  if (!text) {
+    throw new Error("Gemini returned no text content for outfit explanation");
   }
 
-  const parsed = extractJson<{ explanation: string }>(textBlock.text);
+  const parsed = extractJson<{ explanation: string }>(text);
   return parsed.explanation;
 }

@@ -1,38 +1,40 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 
-let client: Anthropic | null = null;
+let client: GoogleGenAI | null = null;
 
-export function getAnthropicClient(): Anthropic {
-  if (!process.env.ANTHROPIC_API_KEY) {
+export function getGeminiClient(): GoogleGenAI {
+  if (!process.env.GEMINI_API_KEY) {
     throw new AIConfigError();
   }
+
   if (!client) {
-    client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    client = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+    });
   }
   return client;
 }
 
-// Thrown whenever an AI feature is invoked without an ANTHROPIC_API_KEY set.
-// Routes catch this and return a clear, actionable error to the frontend
-// instead of a stack trace.
 export class AIConfigError extends Error {
   constructor() {
     super(
-      "ANTHROPIC_API_KEY is not set. Add it to your .env file to enable AI features (see .env.example)."
+      "GEMINI_API_KEY is not set. Add it to your .env file to enable AI features."
     );
     this.name = "AIConfigError";
   }
 }
 
-export const CLAUDE_MODEL = "claude-sonnet-5";
+export const GEMINI_MODEL = "gemini-3.1-flash-lite";
 
-// Extracts the first top-level JSON object/array from a Claude text response,
-// tolerating stray prose or markdown code fences around it.
 export function extractJson<T>(text: string): T {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const candidate = fenced ? fenced[1] : text;
   const start = candidate.search(/[[{]/);
-  if (start === -1) throw new Error("No JSON found in AI response");
+
+  if (start === -1) {
+    throw new Error("No JSON found in AI response");
+  }
+
   const trimmed = candidate.slice(start);
   return JSON.parse(trimmed) as T;
 }

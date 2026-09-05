@@ -1,4 +1,8 @@
-import { getAnthropicClient, CLAUDE_MODEL, extractJson } from "@/lib/anthropic";
+import {
+  getGeminiClient,
+  GEMINI_MODEL,
+  extractJson,
+} from "@/lib/anthropic";
 import { CATEGORY_LIST, CATEGORIES } from "@/lib/constants";
 import type { ClothingAnalysis } from "@/lib/types";
 
@@ -37,37 +41,37 @@ export async function analyzeClothingImage(
   base64Image: string,
   mediaType: string
 ): Promise<ClothingAnalysis> {
-  const client = getAnthropicClient();
+  const client = getGeminiClient();
 
-  const message = await client.messages.create({
-    model: CLAUDE_MODEL,
-    max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [
+  const response = await client.models.generateContent({
+    model: GEMINI_MODEL,
+    contents: [
       {
         role: "user",
-        content: [
+        parts: [
           {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: mediaType as "image/jpeg" | "image/png" | "image/webp",
+            inlineData: {
+              mimeType: mediaType,
               data: base64Image,
             },
           },
           {
-            type: "text",
             text: `Analyze this clothing item and respond with JSON matching exactly this shape:\n${RESPONSE_SHAPE}`,
           },
         ],
       },
     ],
+    config: {
+      systemInstruction: SYSTEM_PROMPT,
+      responseMimeType: "application/json",
+    },
   });
 
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("Claude returned no text content for clothing analysis");
+  const text = response.text;
+
+  if (!text) {
+    throw new Error("Gemini returned no text content for clothing analysis");
   }
 
-  return extractJson<ClothingAnalysis>(textBlock.text);
+  return extractJson<ClothingAnalysis>(text);
 }
