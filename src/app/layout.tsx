@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const inter = Inter({
@@ -15,14 +14,25 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ClosetAI — Your digital wardrobe, styled by AI",
+  title: "matchin' — your wardrobe. matched.",
   description:
-    "Upload the clothes you own, and let ClosetAI build complete outfits from your real wardrobe — for any occasion, any weather.",
+    "matchin' turns the clothes you already own into a digital wardrobe, then matches complete outfits and shopping decisions from it — for any occasion, any weather.",
+  openGraph: {
+    title: "matchin'",
+    description: "your wardrobe. matched.",
+    siteName: "matchin'",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "matchin'",
+    description: "your wardrobe. matched.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-paper text-ink">{children}</body>
     </html>
   );

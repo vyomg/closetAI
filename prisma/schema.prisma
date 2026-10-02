@@ -1,4 +1,4 @@
-// ClosetAI database schema
+// matchin' database schema
 // Dev default: SQLite (zero config). Swap `provider` to "postgresql" and set
 // DATABASE_URL to a Postgres connection string for production — the schema
 // below is Postgres-compatible as written.
@@ -37,12 +37,215 @@ model User {
   // Learned weights the Style Learner nudges over time based on feedback.
   learnedPreferences String @default("{}")
 
-  city String? // manually entered, for weather-aware recommendations
+  city        String? // city label used for weather lookups (e.g. "Hyderabad")
+  admin1      String? // state/region, for disambiguating same-named cities (e.g. "Telangana")
+  country     String? // resolved alongside city, for currency defaults + display (e.g. "India")
+  countryCode String? // ISO 3166-1 alpha-2 (e.g. "IN") — preferred over `country` name matching wherever available, since it can't be misspelled/localized
 
-  clothingItems ClothingItem[]
-  outfits       Outfit[]
-  feedback      OutfitFeedback[]
-  wearHistory   WearHistory[]
+  // Rounded to ~1-2km precision (never the raw GPS fix) so weather can use
+  // real coordinates instead of re-geocoding an ambiguous city name (e.g.
+  // "Hyderabad" exists in both India and Pakistan), while keeping location
+  // storage privacy-conscious. Null until the user sets a location.
+  latitude  Float?
+  longitude Float?
+
+  // How the current city/country/coordinates were obtained — lets Settings
+  // render the right state without re-deriving it. NONE | GPS | MANUAL
+  locationSource String @default("NONE")
+
+  // "AUTO" follows the detected location; any other value is an explicit override.
+  temperatureUnit String @default("AUTO") // AUTO | C | F
+  distanceUnit    String @default("AUTO") // AUTO | km | mi
+
+  clothingItems      ClothingItem[]
+  outfits            Outfit[]
+  feedback           OutfitFeedback[]
+  wearHistory        WearHistory[]
+  shoppingPreference ShoppingPreference?
+
+  personalAppearanceProfile PersonalAppearanceProfile?
+  sharedOutfits             SharedOutfit[]
+  friendOutfitRequests      FriendOutfitRequest[]
+  calendarEntries           OutfitCalendarEntry[]
+  trips                     Trip[]
+  capsuleWardrobes          CapsuleWardrobe[]
+}
+
+// Photo-derived personal styling profile — see src/lib/prompts/personalAppearanceAnalyzer.ts
+// for the analysis prompt and src/app/api/profile/appearance-photo/route.ts for the upload/
+// analysis flow. This is ONLY ever read back by the owning user's own authenticated
+// requests — never included in any public/share/friend-request serializer.
+model PersonalAppearanceProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status   String  @default("PENDING") // PENDING | ANALYZING | COMPLETE | FAILED | SKIPPED
+  photoUrl String? // Vercel Blob URL under profile-photos/ — null once the user deletes the original.
+
+  // Raw Gemini output — neutral fashion-styling attributes only. Purely
+  // descriptive/advisory; explicit user preferences on User always win.
+  faceShape           String?
+  hairstyleNotes      String?
+  bodyProportionNotes String?
+  skinToneCategory    String? // light | light-medium | medium | medium-deep | deep
+  recommendedPalette  String  @default("[]")
+  neutralPalette      String  @default("[]")
+  accentColors        String  @default("[]")
+  recommendedFits     String  @default("[]")
+  recommendedSilhouettes String @default("[]")
+  layeringNotes       String?
+  trouserNotes        String?
+  topNotes            String?
+  outerwearNotes      String?
+  footwearNotes       String?
+  accessoryNotes      String?
+  collarNecklineNotes String?
+  styleStrengths      String  @default("[]")
+  experimentIdeas     String  @default("[]")
+  confidence          String  @default("{}") // per-field: "low" | "medium" | "high"
+
+  analyzedAt   DateTime?
+  errorMessage String?
+  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime  @default(now())
+}
+
+// A read-only public link to exactly one outfit. Never exposes anything else
+// about the user (wardrobe, appearance profile, location, etc).
+model SharedOutfit {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId  String
+  outfit    Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([outfitId])
+  @@index([userId])
+}
+
+// "Ask a Friend" — a single-responder lightweight request/response, not a
+// social network. The friend never needs an account; they respond once via
+// the public token link.
+model FriendOutfitRequest {
+  id              String    @id @default(cuid())
+  token           String    @unique @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId        String
+  outfit          Outfit    @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  question        String    @default("Should I wear this?")
+  responseType    String? // love | change-something | suggest-another
+  responseComment String?
+  respondedAt     DateTime?
+  createdAt       DateTime  @default(now())
+
+  // Hides a request from the owner's inbox without deleting it — mirrors
+  // SharedOutfit.revoked's exact style (bare boolean, no timestamp
+  // companion). The friend's response and the underlying outfit are never
+  // touched by this; it only affects what the owner's own inbox lists.
+  archived Boolean @default(false)
+
+  @@index([outfitId])
+  @@index([userId])
+}
+
+model OutfitCalendarEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfitId  String
+  outfit    Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+  date      DateTime // stored at UTC midnight for the plain calendar date
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model Trip {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination String
+  startDate   DateTime
+  endDate     DateTime
+  occasions   String   @default("[]")
+  notes       String?
+  summary     String?
+  createdAt   DateTime @default(now())
+
+  outfits      Outfit[]
+  packingItems TripPackingItem[]
+
+  @@index([userId])
+}
+
+// Standalone pack-list additions that aren't part of a generated trip outfit
+// (e.g. an extra pair of socks) — trip outfits themselves are real Outfit
+// rows (see Outfit.tripId) reusing the existing generation/validation pipeline.
+model TripPackingItem {
+  id             String       @id @default(cuid())
+  tripId         String
+  trip           Trip         @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  clothingItemId String
+  clothingItem   ClothingItem @relation(fields: [clothingItemId], references: [id], onDelete: Cascade)
+  note           String?
+
+  @@index([tripId])
+  @@index([clothingItemId])
+}
+
+model CapsuleWardrobe {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String // e.g. "10-piece summer capsule"
+  itemIds       String   @default("[]")
+  explanations  String   @default("{}") // itemId -> why-selected string
+  missingPieces String   @default("[]")
+  outfitCount   Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Purchase-specific preferences for the "Buy Clothes" feature. Kept separate
+// from the Style Profile fields on User: Style Profile is the source of
+// truth for how the user dresses, this model is only about what/when/how
+// much they're willing to spend on new pieces.
+model ShoppingPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  budgetMin Int?
+  budgetMax Int?
+  // "AUTO" follows the currency resolved from the user's location/country;
+  // any ISO 4217 code (e.g. "INR", "JPY") is an explicit override.
+  currency  String @default("AUTO")
+
+  preferredColors     String @default("[]")
+  avoidedColors       String @default("[]")
+  preferredCategories String @default("[]") // Tops | Bottoms | Outerwear | Shoes | Accessories
+  // e.g. "Tops::T-shirt", "Accessories::Sunglasses" — category::subcategory pairs
+  preferredSubcategories String @default("[]")
+  preferredRetailers     String @default("[]") // e.g. "H&M", "Zara", "Uniqlo"
+  preferredFits          String @default("[]") // Slim | Regular | Relaxed | Oversized | Straight
+  preferredMaterials     String @default("[]") // Cotton | Linen | Denim | Wool | Lightweight | Breathable
+
+  // e.g. "Fill wardrobe gaps", "Improve outfit variety", "Upgrade basics",
+  // "Add statement pieces", "Seasonal clothing", "Occasion-specific clothing", "Surprise me"
+  priorities String @default("[]")
+
+  // What the user is currently shopping for, e.g. "Fill wardrobe gaps",
+  // "Complete an outfit", "Seasonal refresh" — empty string means unset.
+  shoppingMode String @default("")
+
+  updatedAt DateTime @updatedAt
 }
 
 model ClothingItem {
@@ -55,6 +258,12 @@ model ClothingItem {
   subcategory String
 
   primaryColor    String
+  // Gemini-generated "clean, neutral background" version of the same
+  // garment, used for display wherever the wardrobe is shown. Purely
+  // additive: the original `imageUrl` upload is never deleted or
+  // overwritten, and every read falls back to it when this is null (e.g.
+  // the AI image step is unavailable, or failed for this specific photo).
+  processedImageUrl String?
   secondaryColors String  @default("[]")
   pattern         String  @default("Solid")
   material        String?
@@ -77,7 +286,8 @@ model ClothingItem {
   lastWornAt  DateTime?
   createdAt   DateTime  @default(now())
 
-  outfitItems OutfitItem[]
+  outfitItems      OutfitItem[]
+  tripPackingItems TripPackingItem[]
 
   @@index([userId])
 }
@@ -97,11 +307,33 @@ model Outfit {
   isSaved       Boolean  @default(false)
   createdAt     DateTime @default(now())
 
-  items    OutfitItem[]
-  feedback OutfitFeedback[]
-  wears    WearHistory[]
+  // Optional trip this outfit was generated for (Trip Stylist). Deleting the
+  // trip un-links the outfit rather than deleting it — it's still real wear
+  // history for the user.
+  tripId String?
+  trip   Trip?   @relation(fields: [tripId], references: [id], onDelete: SetNull)
+
+  // Set when this outfit was generated to complete an Outfit Challenge (see
+  // OUTFIT_CHALLENGES in lib/constants.ts) — challenges themselves are a
+  // static catalog, not a DB model.
+  challengeKey String?
+
+  // Self-relation: set when this outfit was created via "Outfit Remix" of
+  // another one. Nulled (not cascaded) if the source outfit is later deleted.
+  remixOfOutfitId String?
+  remixOf         Outfit?  @relation("OutfitRemix", fields: [remixOfOutfitId], references: [id], onDelete: SetNull)
+  remixes         Outfit[] @relation("OutfitRemix")
+
+  items           OutfitItem[]
+  feedback        OutfitFeedback[]
+  wears           WearHistory[]
+  sharedLinks     SharedOutfit[]
+  friendRequests  FriendOutfitRequest[]
+  calendarEntries OutfitCalendarEntry[]
 
   @@index([userId])
+  @@index([tripId])
+  @@index([remixOfOutfitId])
 }
 
 model OutfitItem {

@@ -67,7 +67,7 @@ export default function WardrobePage() {
 
 function GridSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4 sm:gap-5">
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="rounded-2xl border border-line bg-white overflow-hidden">
           <div className="aspect-[4/5] bg-paper-alt animate-pulse" />
@@ -85,7 +85,7 @@ function EmptyState() {
   return (
     <div className="rounded-2xl border border-dashed border-line py-24 text-center">
       <p className="font-display text-2xl mb-3">Your closet is empty.</p>
-      <p className="text-stone mb-8">Add your first item and let ClosetAI start learning your wardrobe.</p>
+      <p className="text-stone mb-8">Add your first item and let matchin' start learning your wardrobe.</p>
       <LinkButton href="/wardrobe/add">Add your first item</LinkButton>
     </div>
   );

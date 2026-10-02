@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { OutfitCard } from "@/components/OutfitCard";
 import { LinkButton } from "@/components/ui/Button";
+import { BrandLoading } from "@/components/Brand";
 import { cn } from "@/lib/cn";
 import type { OutfitDTO } from "@/lib/clientTypes";
 
@@ -42,7 +43,7 @@ export default function OutfitsPage() {
       <div className="flex items-end justify-between mb-8">
         <div>
           <h1 className="font-display text-4xl">My Outfits</h1>
-          <p className="text-stone mt-2">Everything ClosetAI has put together for you.</p>
+          <p className="text-stone mt-2">Everything matchin' has put together for you.</p>
         </div>
         <LinkButton href="/outfits/create">Create an Outfit</LinkButton>
       </div>
@@ -63,7 +64,7 @@ export default function OutfitsPage() {
       </div>
 
       {outfits === null ? (
-        <p className="text-stone">Loading…</p>
+        <BrandLoading />
       ) : outfits.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line py-24 text-center">
           <p className="font-display text-2xl mb-3">No outfits yet.</p>
@@ -76,9 +77,11 @@ export default function OutfitsPage() {
             <OutfitCard
               key={outfit.id}
               outfit={outfit}
+              showSocialActions
               onSaveToggle={(next) => handleSaveToggle(outfit.id, next)}
               onDelete={() => handleDelete(outfit.id)}
               onWear={() => handleWear(outfit.id)}
+              onRemixed={(newOutfit) => setOutfits((prev) => (prev ? [newOutfit, ...prev] : [newOutfit]))}
             />
           ))}
         </div>

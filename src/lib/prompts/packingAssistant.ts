@@ -1,3 +1,4 @@
+import { Type } from "@google/genai";
 import {
   getGeminiClient,
   GEMINI_MODEL,
@@ -6,11 +7,42 @@ import {
 import type { WardrobeItemForAI } from "@/lib/prompts/outfitGenerator";
 import type { StyleProfileData } from "@/lib/types";
 
+const RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    items: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          itemId: { type: Type.STRING },
+          reason: { type: Type.STRING },
+        },
+        required: ["itemId", "reason"],
+      },
+    },
+    outfitCombinations: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          itemIds: { type: Type.ARRAY, items: { type: Type.STRING } },
+          occasion: { type: Type.STRING },
+        },
+        required: ["itemIds", "occasion"],
+      },
+    },
+    summary: { type: Type.STRING },
+  },
+  required: ["items", "outfitCombinations", "summary"],
+};
+
 export type PackingRequest = {
   wardrobe: WardrobeItemForAI[];
   destination: string;
   days: number;
   weatherNotes: string;
+  weatherContext: string | null;
   occasions: string[];
   styleProfile: StyleProfileData;
 };
@@ -21,7 +53,7 @@ export type PackingResult = {
   summary: string;
 };
 
-const SYSTEM_PROMPT = `You are the Packing Assistant for ClosetAI. Build a minimal, versatile travel wardrobe using ONLY items from the user's actual wardrobe list provided to you. Never invent items.
+const SYSTEM_PROMPT = `You are the Packing Assistant for matchin'. Build a minimal, versatile travel wardrobe using ONLY items from the user's actual wardrobe list provided to you. Never invent items.
 
 Principles:
 - Favor pieces that can be mixed into multiple outfits (versatility over novelty).
@@ -48,8 +80,11 @@ ${JSON.stringify(input.wardrobe, null, 2)}
 TRIP:
 - Destination: ${input.destination}
 - Days: ${input.days}
-- Weather/season notes: ${input.weatherNotes}
+- Weather/season notes: ${input.weatherNotes || "(none provided)"}
+- Live destination weather forecast: ${input.weatherContext ?? "(unavailable — rely on the season/weather notes above)"}
 - Occasions: ${input.occasions.join(", ")}
+
+Prioritize the destination's climate over the user's home climate — if they mention a home-climate habit that conflicts with the destination weather, pack for the destination.
 
 USER STYLE PROFILE:
 ${JSON.stringify(input.styleProfile, null, 2)}
@@ -62,6 +97,7 @@ Respond with the JSON object only.`;
     config: {
       systemInstruction: SYSTEM_PROMPT,
       responseMimeType: "application/json",
+      responseSchema: RESPONSE_SCHEMA,
     },
   });
 

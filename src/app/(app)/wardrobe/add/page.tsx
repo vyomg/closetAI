@@ -9,7 +9,7 @@ export default function AddClothingPage() {
       </Link>
       <h1 className="font-display text-4xl mt-4 mb-2">Add clothing</h1>
       <p className="text-stone mb-10">
-        Upload a clear photo of one item at a time. ClosetAI will identify its category, colour,
+        Upload a clear photo of one item at a time. matchin' will identify its category, colour,
         fit and more automatically — you can correct anything afterwards.
       </p>
       <ClothingUploader />

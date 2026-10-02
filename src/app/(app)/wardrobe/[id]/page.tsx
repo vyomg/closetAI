@@ -4,13 +4,15 @@ import { useEffect, useState, use as usePromise } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { AlertTriangle, Trash2, Sparkles, RefreshCw } from "lucide-react";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { Input, Label, Select, Textarea } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
 import { Badge } from "@/components/ui/Badge";
 import { CATEGORIES, CATEGORY_LIST, FIT_OPTIONS, SEASONS, type Category } from "@/lib/constants";
+import { BrandLoading } from "@/components/Brand";
 import type { ClothingItemDTO } from "@/lib/clientTypes";
+import type { ClothingAnalysis } from "@/lib/types";
 
 export default function ClothingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = usePromise(params);
@@ -20,6 +22,10 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
   const [saved, setSaved] = useState(false);
   const [tagsInput, setTagsInput] = useState("");
   const [pairingsInput, setPairingsInput] = useState("");
+  const [reanalyzing, setReanalyzing] = useState(false);
+  const [reanalysis, setReanalysis] = useState<ClothingAnalysis | null>(null);
+  const [reanalyzeError, setReanalyzeError] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
 
   useEffect(() => {
     fetch(`/api/clothing/${id}`)
@@ -32,7 +38,7 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
   }, [id]);
 
   if (!item) {
-    return <div className="text-stone">Loading…</div>;
+    return <BrandLoading />;
   }
 
   function set<K extends keyof ClothingItemDTO>(key: K, value: ClothingItemDTO[K]) {
@@ -77,6 +83,46 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
     router.push("/wardrobe");
   }
 
+  async function reanalyze() {
+    setReanalyzing(true);
+    setReanalyzeError(null);
+    setReanalysis(null);
+    const res = await fetch(`/api/clothing/${item!.id}/reanalyze`, { method: "POST" });
+    const data = await res.json();
+    setReanalyzing(false);
+    if (!res.ok) {
+      setReanalyzeError(data.error || "Re-analysis failed.");
+      return;
+    }
+    setReanalysis(data.analysis);
+  }
+
+  function applyReanalysis() {
+    if (!reanalysis) return;
+    setItem((i) =>
+      i
+        ? {
+            ...i,
+            primaryColor: reanalysis.primaryColor,
+            secondaryColors: reanalysis.secondaryColors,
+            pattern: reanalysis.pattern,
+            material: reanalysis.material,
+            fit: reanalysis.fit,
+            style: reanalysis.style,
+            formality: reanalysis.formality,
+            season: reanalysis.season,
+            occasions: reanalysis.occasions,
+            pairings: reanalysis.pairings,
+            tags: reanalysis.tags,
+          }
+        : i
+    );
+    setTagsInput(reanalysis.tags.join(", "));
+    setPairingsInput(reanalysis.pairings.join(", "));
+    setReanalysis(null);
+    setSaved(false);
+  }
+
   const subcategoryOptions = CATEGORIES[item.category as Category] ?? [];
 
   return (
@@ -88,7 +134,7 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
       <div className="mt-6 grid md:grid-cols-2 gap-10">
         <div>
           <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-line bg-paper-alt">
-            <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+            <Image src={showOriginal ? item.originalImageUrl : item.imageUrl} alt={item.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" />
           </div>
           <div className="mt-4 flex items-center justify-between text-sm text-stone">
             <span>Worn {item.wearCount} time{item.wearCount === 1 ? "" : "s"}</span>
@@ -96,6 +142,51 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
               <Trash2 className="h-3.5 w-3.5" /> Remove item
             </button>
           </div>
+          {item.hasProcessedImage && (
+            <button
+              onClick={() => setShowOriginal((s) => !s)}
+              className="mt-2 text-xs text-stone hover:text-ink underline underline-offset-4 cursor-pointer"
+            >
+              {showOriginal ? "Show cleaned photo" : "View original photo"}
+            </button>
+          )}
+
+          <div className="mt-5 flex flex-col gap-2.5">
+            <LinkButton href={`/outfits/create?anchor=${item.id}`} className="w-full">
+              <Sparkles className="h-4 w-4 mr-1.5" /> Style Me With This
+            </LinkButton>
+            <Button variant="outline" onClick={reanalyze} disabled={reanalyzing} className="w-full">
+              <RefreshCw className={`h-4 w-4 mr-1.5 ${reanalyzing ? "animate-spin" : ""}`} />
+              {reanalyzing ? "Re-analyzing…" : "Re-analyze with AI"}
+            </Button>
+          </div>
+
+          {reanalyzeError && <p className="mt-3 text-sm text-warning">{reanalyzeError}</p>}
+
+          {reanalysis && (
+            <div className="mt-4 rounded-xl bg-paper-alt p-4">
+              <p className="text-sm font-medium mb-2">New analysis</p>
+              <div className="text-sm text-ink-soft space-y-1 mb-4">
+                <p>
+                  Formality: {item.formality}/5 → <strong>{reanalysis.formality}/5</strong>
+                </p>
+                <p>
+                  Style: {item.style} → <strong>{reanalysis.style}</strong>
+                </p>
+                <p>
+                  Fit: {item.fit} → <strong>{reanalysis.fit}</strong>
+                </p>
+              </div>
+              <div className="flex gap-2.5">
+                <Button size="sm" onClick={applyReanalysis}>
+                  Apply changes
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setReanalysis(null)}>
+                  Discard
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

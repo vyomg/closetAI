@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Field";
+import { Brand } from "@/components/Brand";
 
 export default function LoginPage() {
   return (
@@ -44,9 +45,7 @@ function LoginForm() {
   return (
     <div className="flex-1 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm animate-fade-up">
-        <Link href="/" className="font-display text-xl tracking-tight">
-          ClosetAI
-        </Link>
+        <Brand href="/" size="sm" />
         <h1 className="font-display text-3xl mt-8 mb-2">Welcome back.</h1>
         <p className="text-sm text-stone mb-8">Log in to your wardrobe.</p>
 
@@ -80,7 +79,7 @@ function LoginForm() {
         </form>
 
         <p className="text-sm text-stone mt-8">
-          New to ClosetAI?{" "}
+          New to matchin'?{" "}
           <Link href="/signup" className="text-ink underline underline-offset-4">
             Create an account
           </Link>

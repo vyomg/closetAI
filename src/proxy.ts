@@ -11,7 +11,17 @@ export default auth((req) => {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/uploads") ||
     pathname.startsWith("/demo-images") ||
-    pathname.startsWith("/_next");
+    // Static marketing imagery for the public landing page — needs to be
+    // reachable by signed-out visitors, same as demo-images/uploads above.
+    pathname.startsWith("/landing") ||
+    pathname.startsWith("/_next") ||
+    // Public, token-gated outfit sharing and "Ask a Friend" — the friend
+    // responding here is never expected to have (or need) a matchin'
+    // account. Access control for these is the unguessable token itself,
+    // checked inside each route/page, not session auth.
+    pathname.startsWith("/s/") ||
+    pathname.startsWith("/ask/") ||
+    pathname.startsWith("/api/public/");
 
   if (!req.auth && !isPublic) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
@@ -27,5 +37,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|uploads|demo-images).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon|uploads|demo-images).*)"],
 };

@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { Luggage } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
 import { OCCASIONS } from "@/lib/constants";
-import type { ClothingItemDTO } from "@/lib/clientTypes";
+import type { ClothingItemDTO, WeatherDTO } from "@/lib/clientTypes";
 
 type PackResult = {
   summary: string;
-  items: (ClothingItemDTO & { reason: string })[];
+  destinationWeather: WeatherDTO | null;
+  alreadyOwn: (ClothingItemDTO & { reason: string })[];
   outfitCombinations: { occasion: string; items: ClothingItemDTO[] }[];
+  worthBuying: { category: string; subcategory: string; suggestedColor: string; reason: string; overallScore: number }[];
 };
 
 export default function PackPage() {
+  const router = useRouter();
   const [destination, setDestination] = useState("");
   const [days, setDays] = useState(5);
   const [weatherNotes, setWeatherNotes] = useState("");
@@ -22,6 +27,23 @@ export default function PackPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PackResult | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function saveTrip() {
+    setSaving(true);
+    const today = new Date();
+    const startDate = today.toISOString().slice(0, 10);
+    const endDate = new Date(today.getTime() + days * 86400000).toISOString().slice(0, 10);
+    const res = await fetch("/api/trips", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ destination, startDate, endDate, occasions: occasions.slice(0, 5) }),
+    });
+    const data = await res.json();
+    setSaving(false);
+    if (res.ok) router.push(`/trips/${data.id}`);
+    else setError(data.error || "Couldn't save this trip.");
+  }
 
   async function generate() {
     if (!destination.trim()) {
@@ -49,7 +71,7 @@ export default function PackPage() {
     <div>
       <h1 className="font-display text-4xl mb-2">Pack for a Trip</h1>
       <p className="text-stone mb-10 max-w-xl">
-        Tell ClosetAI where you're headed and it'll build a minimal, versatile capsule from your
+        Tell matchin' where you're headed and it'll build a minimal, versatile capsule from your
         wardrobe.
       </p>
 
@@ -102,16 +124,26 @@ export default function PackPage() {
           {!loading && result && (
             <div className="space-y-8">
               <div className="rounded-2xl border border-line bg-white p-6">
+                {result.destinationWeather && (
+                  <p className="text-xs text-stone mb-2">
+                    {result.destinationWeather.city}
+                    {result.destinationWeather.country ? `, ${result.destinationWeather.country}` : ""} · currently{" "}
+                    {result.destinationWeather.tempC}°C, {result.destinationWeather.condition}
+                  </p>
+                )}
                 <p className="text-sm text-ink-soft leading-relaxed">{result.summary}</p>
+                <Button size="sm" variant="outline" className="mt-4" onClick={saveTrip} disabled={saving}>
+                  <Luggage className="h-3.5 w-3.5 mr-1.5" /> {saving ? "Saving trip…" : "Save this trip"}
+                </Button>
               </div>
 
               <div>
-                <h2 className="font-display text-2xl mb-4">What to pack ({result.items.length} items)</h2>
+                <h2 className="font-display text-2xl mb-4">Already own ({result.alreadyOwn.length} items)</h2>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
-                  {result.items.map((item) => (
+                  {result.alreadyOwn.map((item) => (
                     <div key={item.id}>
                       <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-line bg-paper-alt">
-                        <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                        <Image src={item.imageUrl} alt={item.name} fill sizes="(max-width: 640px) 33vw, 25vw" className="object-cover" />
                       </div>
                       <p className="text-xs font-medium mt-2 truncate">{item.name}</p>
                       <p className="text-[11px] text-stone">{item.reason}</p>
@@ -119,6 +151,25 @@ export default function PackPage() {
                   ))}
                 </div>
               </div>
+
+              {result.worthBuying.length > 0 && (
+                <div>
+                  <h2 className="font-display text-2xl mb-4">Potentially worth buying</h2>
+                  <div className="space-y-3">
+                    {result.worthBuying.map((rec, i) => (
+                      <div key={i} className="rounded-2xl border border-line bg-white p-4 flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {rec.suggestedColor} {rec.subcategory}
+                          </p>
+                          <p className="text-xs text-stone mt-0.5">{rec.reason}</p>
+                        </div>
+                        <span className="text-xs text-stone shrink-0">{rec.overallScore}% match</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {result.outfitCombinations.length > 0 && (
                 <div>
@@ -130,7 +181,7 @@ export default function PackPage() {
                         <div className="flex gap-3">
                           {combo.items.map((item) => (
                             <div key={item.id} className="relative aspect-[4/5] w-16 rounded-lg overflow-hidden bg-paper-alt shrink-0">
-                              <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                              <Image src={item.imageUrl} alt={item.name} fill sizes="64px" className="object-cover" />
                             </div>
                           ))}
                         </div>

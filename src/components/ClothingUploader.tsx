@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,20 +24,37 @@ export function ClothingUploader() {
     const previewUrl = URL.createObjectURL(file);
     setEntries((prev) => [{ key, previewUrl, status: "analyzing" }, ...prev]);
 
+    // Client-side pre-validation — fail fast with a specific message instead
+    // of round-tripping to the server for something we can already tell.
+    if (!file.type.startsWith("image/")) {
+      setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, status: "error", error: "File type unsupported. Use JPEG, PNG or WebP." } : e)));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, status: "error", error: "This image is too large. Please choose a smaller image (under 10MB)." } : e)));
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("image", file);
       const res = await fetch("/api/clothing", { method: "POST", body: formData });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Upload failed");
+        const data = await res.json().catch(() => null);
+        // If the server didn't return parseable JSON (e.g. a framework-level
+        // 500 for an error we failed to catch), say so honestly rather than
+        // guessing — this is a server error, not a validation message.
+        const message = data?.error ?? `Server error (${res.status}). Please try again.`;
+        throw new Error(message);
       }
       const item = await res.json();
       setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, status: "done", item } : e)));
     } catch (err) {
-      setEntries((prev) =>
-        prev.map((e) => (e.key === key ? { ...e, status: "error", error: (err as Error).message } : e))
-      );
+      // A thrown TypeError from fetch itself (not an HTTP error response)
+      // means the request never reached the server — a real network problem.
+      const isNetworkError = err instanceof TypeError;
+      const message = isNetworkError ? "Connection problem — check your network and try again." : (err as Error).message;
+      setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, status: "error", error: message } : e)));
     }
   }, []);
 
@@ -94,11 +111,25 @@ export function ClothingUploader() {
   );
 }
 
+// Purely a perceived-progress readout for the single in-flight request — it
+// never claims a step is done before the real response comes back, it just
+// gives the honest wait something readable to look at.
+const ANALYZING_STEPS = ["Analyzing…", "Reading colour, fit, style…", "Cleaning image…", "Creating your wardrobe item…"];
+
+function AnalyzingStatus() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => Math.min(s + 1, ANALYZING_STEPS.length - 1)), 1400);
+    return () => clearInterval(id);
+  }, []);
+  return <p className="text-xs text-stone">{ANALYZING_STEPS[step]}</p>;
+}
+
 function UploadCard({ entry }: { entry: UploadEntry }) {
   return (
     <div className="rounded-2xl border border-line bg-white overflow-hidden animate-fade-up">
       <div className="relative aspect-[4/5] bg-paper-alt">
-        <Image src={entry.previewUrl} alt="" fill className="object-cover" unoptimized />
+        <Image src={entry.previewUrl} alt="" fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" unoptimized />
         <div className="absolute inset-0 flex items-end p-3">
           {entry.status === "analyzing" && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium">
@@ -136,7 +167,7 @@ function UploadCard({ entry }: { entry: UploadEntry }) {
         ) : entry.status === "error" ? (
           <p className="text-xs text-warning">{entry.error}</p>
         ) : (
-          <p className="text-xs text-stone">Reading colour, fit, style…</p>
+          <AnalyzingStatus />
         )}
       </div>
     </div>

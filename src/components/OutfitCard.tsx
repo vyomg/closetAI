@@ -2,10 +2,22 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Bookmark, RefreshCw, Trash2, Shirt } from "lucide-react";
+import { Bookmark, RefreshCw, Trash2, Shirt, Share2, UserPlus, Shuffle } from "lucide-react";
 import { FeedbackButtons } from "@/components/FeedbackButtons";
+import { ShareActions } from "@/components/ShareActions";
 import { cn } from "@/lib/cn";
 import type { OutfitDTO } from "@/lib/clientTypes";
+
+const REMIX_OPTIONS = [
+  { value: "change-shoes", label: "Change shoes" },
+  { value: "change-top", label: "Change top" },
+  { value: "add-outerwear", label: "Add outerwear" },
+  { value: "remove-outerwear", label: "Remove outerwear" },
+  { value: "more-formal", label: "More formal" },
+  { value: "more-casual", label: "More casual" },
+  { value: "weather-appropriate", label: "Weather appropriate" },
+  { value: "different-colors", label: "Different colors" },
+] as const;
 
 const SLOT_ORDER = ["outerwear", "top", "bottom", "shoes", "accessory"];
 const SLOT_LABEL: Record<string, string> = {
@@ -19,21 +31,60 @@ const SLOT_LABEL: Record<string, string> = {
 export function OutfitCard({
   outfit,
   showFeedback = true,
+  showSocialActions = false,
   onSaveToggle,
   onDelete,
   onWear,
   onRecreate,
+  onRemixed,
 }: {
   outfit: OutfitDTO;
   showFeedback?: boolean;
+  showSocialActions?: boolean;
   onSaveToggle?: (next: boolean) => void;
   onDelete?: () => void;
   onWear?: () => void;
   onRecreate?: () => void;
+  onRemixed?: (newOutfit: OutfitDTO) => void;
 }) {
   const [showWhy, setShowWhy] = useState(false);
   const [whyText, setWhyText] = useState<string | null>(null);
   const [loadingWhy, setLoadingWhy] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [askUrl, setAskUrl] = useState<string | null>(null);
+  const [remixOpen, setRemixOpen] = useState(false);
+  const [remixing, setRemixing] = useState(false);
+  const [remixError, setRemixError] = useState<string | null>(null);
+
+  async function share() {
+    const res = await fetch(`/api/outfits/${outfit.id}/share`, { method: "POST" });
+    const data = await res.json();
+    if (res.ok) setShareUrl(data.url);
+  }
+
+  async function askFriend() {
+    const res = await fetch(`/api/outfits/${outfit.id}/ask-friend`, { method: "POST" });
+    const data = await res.json();
+    if (res.ok) setAskUrl(data.url);
+  }
+
+  async function remix(instruction: string) {
+    setRemixing(true);
+    setRemixError(null);
+    const res = await fetch(`/api/outfits/${outfit.id}/remix`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ instruction }),
+    });
+    const data = await res.json();
+    setRemixing(false);
+    setRemixOpen(false);
+    if (!res.ok) {
+      setRemixError(data.error || "Remix failed.");
+      return;
+    }
+    onRemixed?.(data);
+  }
 
   const grouped = SLOT_ORDER.map((slot) => ({
     slot,
@@ -53,8 +104,8 @@ export function OutfitCard({
 
   return (
     <div className="rounded-2xl border border-line bg-white overflow-hidden animate-fade-up">
-      <div className="p-6 sm:p-7">
-        <div className="flex items-start justify-between mb-6">
+      <div className="p-5 sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
           <div>
             <p className="text-xs uppercase tracking-wide text-stone mb-1">
               {outfit.occasion} · {outfit.style}
@@ -77,10 +128,48 @@ export function OutfitCard({
             {onRecreate && (
               <button
                 onClick={onRecreate}
-                className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs hover:border-ink/40 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
               >
                 <RefreshCw className="h-3.5 w-3.5" /> Recreate
               </button>
+            )}
+            {showSocialActions && (
+              <>
+                <div className="relative">
+                  <button
+                    onClick={() => setRemixOpen((o) => !o)}
+                    disabled={remixing}
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
+                  >
+                    <Shuffle className="h-3.5 w-3.5" /> {remixing ? "Remixing…" : "Remix"}
+                  </button>
+                  {remixOpen && (
+                    <div className="absolute right-0 top-full mt-1.5 z-10 w-48 rounded-xl border border-line bg-white shadow-[0_8px_30px_-12px_rgba(23,22,15,0.25)] py-1.5">
+                      {REMIX_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.value}
+                          onClick={() => remix(opt.value)}
+                          className="w-full text-left px-3.5 py-2 text-sm hover:bg-paper-alt cursor-pointer"
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={share}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
+                >
+                  <Share2 className="h-3.5 w-3.5" /> Share
+                </button>
+                <button
+                  onClick={askFriend}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
+                >
+                  <UserPlus className="h-3.5 w-3.5" /> Ask a Friend
+                </button>
+              </>
             )}
             {onDelete && (
               <button
@@ -98,7 +187,7 @@ export function OutfitCard({
             group.items.map((item) => (
               <div key={item.id}>
                 <div className="relative aspect-[4/5] rounded-xl overflow-hidden border border-line bg-paper-alt">
-                  <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                  <Image src={item.imageUrl} alt={item.name} fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" />
                 </div>
                 <p className="text-xs text-stone mt-2">{SLOT_LABEL[group.slot]}</p>
                 <p className="text-sm font-medium truncate">{item.name}</p>
@@ -147,6 +236,22 @@ export function OutfitCard({
 
         {outfit.lastWornAt && (
           <p className="mt-3 text-xs text-stone">Last worn {new Date(outfit.lastWornAt).toLocaleDateString()}</p>
+        )}
+
+        {remixError && <p className="mt-4 text-sm text-warning">{remixError}</p>}
+
+        {shareUrl && (
+          <div className="mt-4 rounded-xl bg-paper-alt p-4">
+            <p className="text-sm font-medium mb-2.5">Share this outfit</p>
+            <ShareActions url={shareUrl} title={`${outfit.occasion} outfit`} />
+          </div>
+        )}
+
+        {askUrl && (
+          <div className="mt-4 rounded-xl bg-paper-alt p-4">
+            <p className="text-sm font-medium mb-2.5">Ask a friend — send them this link</p>
+            <ShareActions url={askUrl} title="Should I wear this?" />
+          </div>
         )}
       </div>
     </div>

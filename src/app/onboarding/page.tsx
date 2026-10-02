@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
 import { ImportanceScale } from "@/components/ImportanceScale";
+import { PersonalAppearanceUpload } from "@/components/PersonalAppearanceUpload";
+import { PersonalAppearanceReview } from "@/components/PersonalAppearanceReview";
+import { Spark } from "@/components/Brand";
 import { DESIRED_STYLES, OCCASIONS, FIT_OPTIONS, COLOR_PALETTE, SHOE_TYPES } from "@/lib/constants";
+import type { PersonalAppearanceProfileDTO } from "@/lib/clientTypes";
 
 type Data = {
   preferredStyles: string[];
@@ -36,13 +40,14 @@ const INITIAL: Data = {
   formalImportance: 3,
 };
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 10;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [data, setData] = useState<Data>(INITIAL);
   const [submitting, setSubmitting] = useState(false);
+  const [appearanceProfile, setAppearanceProfile] = useState<PersonalAppearanceProfileDTO | null>(null);
 
   function set<K extends keyof Data>(key: K, value: Data[K]) {
     setData((d) => ({ ...d, [key]: value }));
@@ -77,13 +82,13 @@ export default function OnboardingPage() {
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
               key={i}
-              className={`h-1 flex-1 rounded-full transition-colors ${i < step ? "bg-ink" : "bg-line"}`}
+              className={`h-1 flex-1 rounded-full transition-colors ${i < step ? "bg-lime" : "bg-line"}`}
             />
           ))}
         </div>
 
         {step === 1 && (
-          <Step title="What's your preferred style?" subtitle="Pick as many as feel like you.">
+          <Step title="what's your vibe?" subtitle="Pick as many as feel like you.">
             <StyleSelector options={DESIRED_STYLES} selected={data.preferredStyles} onChange={(v) => set("preferredStyles", v)} />
           </Step>
         )}
@@ -137,8 +142,8 @@ export default function OnboardingPage() {
         )}
 
         {step === 7 && (
-          <Step title="How adventurous are you with outfits?" subtitle="1 is safe and familiar, 5 is bold and experimental.">
-            <ImportanceScale value={data.adventurousness} onChange={(v) => set("adventurousness", v)} lowLabel="Very safe" highLabel="Bold" />
+          <Step title="how far should we push it?" subtitle="1 is safe and familiar, 5 is surprise me.">
+            <ImportanceScale value={data.adventurousness} onChange={(v) => set("adventurousness", v)} lowLabel="safe" highLabel="surprise me" />
           </Step>
         )}
 
@@ -161,17 +166,57 @@ export default function OnboardingPage() {
           </Step>
         )}
 
+        {step === 9 && (
+          <Step
+            title="Help matchin' understand your proportions"
+            subtitle="For better outfit recommendations, upload a full-body photo so matchin' can understand your proportions and what styles are likely to suit you. This is optional and only used for styling — you can skip it."
+          >
+            <PersonalAppearanceUpload onAnalyzed={(profile) => { setAppearanceProfile(profile); setStep(10); }} />
+            <button
+              onClick={() => { setAppearanceProfile(null); setStep(10); }}
+              className="mt-5 text-sm text-stone hover:text-ink underline underline-offset-4 cursor-pointer"
+            >
+              Skip for now
+            </button>
+          </Step>
+        )}
+
+        {step === 10 && (
+          <Step
+            title={appearanceProfile ? "Your personal style profile" : "Almost there"}
+            subtitle={
+              appearanceProfile
+                ? "Here's what matchin' noticed — your own choices always take priority."
+                : "You skipped the photo step. You can add one later from Settings."
+            }
+          >
+            {appearanceProfile ? (
+              <PersonalAppearanceReview
+                profile={appearanceProfile}
+                fitPreference={data.fitPreference}
+                onFitPreferenceChange={(v) => set("fitPreference", v)}
+                colorsLove={data.colorsLove}
+                onColorsLoveChange={(v) => set("colorsLove", v)}
+              />
+            ) : (
+              <p className="text-sm text-ink-soft">Ready to finish setting up your closet.</p>
+            )}
+          </Step>
+        )}
+
         <div className="flex items-center justify-between mt-10">
           <Button variant="ghost" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
             Back
           </Button>
           {step < TOTAL_STEPS ? (
-            <Button onClick={() => setStep((s) => s + 1)} disabled={!canAdvance}>
-              Continue
-            </Button>
+            step === 9 ? null : (
+              <Button onClick={() => setStep((s) => s + 1)} disabled={!canAdvance}>
+                Continue
+              </Button>
+            )
           ) : (
-            <Button onClick={finish} disabled={submitting}>
-              {submitting ? "Setting up your closet…" : "Finish setup"}
+            <Button variant="lime" onClick={finish} disabled={submitting} className="lowercase">
+              {submitting ? "setting up your closet…" : <>let&apos;s go <Spark className="h-3.5 w-3.5 inline ml-1 -translate-y-px" /></>}
             </Button>
           )}
         </div>
@@ -183,7 +228,7 @@ export default function OnboardingPage() {
 function Step({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
   return (
     <div className="animate-fade-in">
-      <h1 className="font-display text-3xl mb-2 leading-tight">{title}</h1>
+      <h1 className="font-display text-3xl mb-2 leading-tight lowercase">{title}</h1>
       <p className="text-sm text-stone mb-8">{subtitle}</p>
       {children}
     </div>

@@ -2,7 +2,7 @@ import { ButtonHTMLAttributes, forwardRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-type Variant = "primary" | "secondary" | "ghost" | "outline";
+type Variant = "primary" | "secondary" | "ghost" | "outline" | "lime" | "outline-dark";
 type Size = "sm" | "md" | "lg";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
@@ -10,6 +10,11 @@ const VARIANT_CLASSES: Record<Variant, string> = {
   secondary: "bg-paper-alt text-ink hover:bg-line",
   ghost: "bg-transparent text-ink hover:bg-paper-alt",
   outline: "bg-transparent text-ink border border-line hover:border-ink",
+  // The signature CTA treatment — used sparingly, on the one or two most
+  // important actions on a dark surface (hero, final CTA).
+  lime: "bg-lime text-lime-ink hover:scale-[1.03] active:scale-[0.97]",
+  // Secondary action on a dark surface (e.g. "log in" next to "start now").
+  "outline-dark": "bg-transparent text-white border border-white/25 hover:border-white",
 };
 
 const SIZE_CLASSES: Record<Size, string> = {

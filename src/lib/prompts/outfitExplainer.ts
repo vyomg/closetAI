@@ -1,3 +1,4 @@
+import { Type } from "@google/genai";
 import {
   getGeminiClient,
   GEMINI_MODEL,
@@ -6,7 +7,15 @@ import {
 import type { StyleProfileData } from "@/lib/types";
 import type { WardrobeItemForAI } from "@/lib/prompts/outfitGenerator";
 
-const SYSTEM_PROMPT = `You are the Outfit Explainer for ClosetAI. Given an already-chosen outfit, explain in plain, natural language why it works. Keep it concise (4-6 short sentences or bullet-style clauses). Cover: why the colours work together, why the formality matches the occasion, why the pieces are stylistically compatible, how it fits the user's stated style, and what occasion(s) it suits. Do not suggest changes or alternatives — only explain the outfit as given. Respond with ONLY a JSON object: { "explanation": string }`;
+const RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    explanation: { type: Type.STRING },
+  },
+  required: ["explanation"],
+};
+
+const SYSTEM_PROMPT = `You are the Outfit Explainer for matchin'. Given an already-chosen outfit, explain in plain, natural language why it works. Keep it concise (4-6 short sentences or bullet-style clauses). Cover: why the colours work together, why the formality matches the occasion, why the pieces are stylistically compatible, how it fits the user's stated style, and what occasion(s) it suits. Do not suggest changes or alternatives — only explain the outfit as given. Respond with ONLY a JSON object: { "explanation": string }`;
 
 export async function explainOutfit(params: {
   items: WardrobeItemForAI[];
@@ -31,6 +40,7 @@ ${JSON.stringify(params.styleProfile, null, 2)}`;
     config: {
       systemInstruction: SYSTEM_PROMPT,
       responseMimeType: "application/json",
+      responseSchema: RESPONSE_SCHEMA,
     },
   });
 
