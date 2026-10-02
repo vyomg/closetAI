@@ -30,6 +30,7 @@ export async function GET(_req: Request, { params }: RouteParams) {
     overallScore: outfit.overallScore,
     adventureLevel: outfit.adventureLevel,
     isSaved: outfit.isSaved,
+    isManual: outfit.isManual,
     createdAt: outfit.createdAt,
     wearCount: outfit.wears.length,
     items: outfit.items.map((oi) => ({ slot: oi.slot, ...clothingItemToJSON(oi.clothingItem) })),

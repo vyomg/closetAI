@@ -11,6 +11,7 @@ export default auth((req) => {
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/uploads") ||
     pathname.startsWith("/demo-images") ||
+    pathname.startsWith("/demo-wardrobe") ||
     // Static marketing imagery for the public landing page — needs to be
     // reachable by signed-out visitors, same as demo-images/uploads above.
     pathname.startsWith("/landing") ||
@@ -37,5 +38,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon|uploads|demo-images).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|apple-icon|uploads|demo-images|demo-wardrobe).*)"],
 };

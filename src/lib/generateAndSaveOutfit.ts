@@ -46,6 +46,7 @@ function formatOutfitResponse(outfit: Awaited<ReturnType<typeof saveOutfit>>, un
     overallScore: outfit.overallScore,
     adventureLevel: outfit.adventureLevel,
     isSaved: outfit.isSaved,
+    isManual: false,
     createdAt: outfit.createdAt,
     tripId: outfit.tripId,
     challengeKey: outfit.challengeKey,

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Spark } from "@/components/Brand";
 import { cn } from "@/lib/cn";
@@ -11,21 +12,48 @@ import type { ClothingItemDTO } from "@/lib/clientTypes";
 // nothing generated — orbit around it. The compatibility decision already
 // happened in the existing Gemini + deterministic-validator pipeline; this
 // component only visualizes the result.
+//
+// `size` is a ceiling, not a fixed value: every offset below is computed
+// from it, so instead of scaling that number down by a guess for mobile, we
+// measure the actual container width and clamp to it — the orbit shrinks to
+// exactly what fits, down to MIN_SIZE, and never clips or causes horizontal
+// overflow on a narrow phone.
+const MIN_SIZE = 220;
+
 export function MatchinOrbit({
   anchor,
   orbiting,
-  size = 340,
+  size: maxSize = 340,
 }: {
   anchor: ClothingItemDTO & { slot?: string };
   orbiting: (ClothingItemDTO & { slot?: string })[];
   size?: number;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState(maxSize);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = (width: number) => {
+      const available = Math.max(0, width - 8); // small breathing room, no edge clipping
+      setSize(Math.max(MIN_SIZE, Math.min(maxSize, available)));
+    };
+    measure(el.clientWidth);
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width;
+      if (width) measure(width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [maxSize]);
+
   const n = orbiting.length;
   const radius = size * 0.36;
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="relative" style={{ width: size, height: size }}>
+    <div ref={containerRef} className="flex flex-col items-center w-full">
+      <div className="relative mx-auto" style={{ width: size, height: size }}>
         {orbiting.map((item, i) => {
           const angle = (i / Math.max(1, n)) * 360 - 90;
           const rad = (angle * Math.PI) / 180;

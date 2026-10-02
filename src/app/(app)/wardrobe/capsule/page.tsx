@@ -47,7 +47,7 @@ export default function CapsuleWardrobePage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {CAPSULE_TYPES.map((c) => (
-          <div key={c.key} className="rounded-2xl border border-line bg-white p-5 flex flex-col justify-between">
+          <div key={c.key} className="rounded-2xl border border-line bg-paper-alt p-5 flex flex-col justify-between">
             <div>
               <p className="font-medium mb-1.5">{c.title}</p>
               <p className="text-sm text-stone">{c.description}</p>

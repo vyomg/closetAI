@@ -66,7 +66,7 @@ export function ShouldIBuyPanel() {
   });
 
   return (
-    <div id="should-i-buy" className="rounded-2xl border border-line bg-white p-6 sm:p-7 scroll-mt-6">
+    <div id="should-i-buy" className="rounded-2xl border border-line bg-paper-alt p-6 sm:p-7 scroll-mt-6">
       <h2 className="font-display text-2xl mb-1">Should I buy this?</h2>
       <p className="text-sm text-stone mb-6">
         Photograph an item you&apos;re considering and matchin' will compare it against your wardrobe and preferences.
@@ -91,7 +91,7 @@ export function ShouldIBuyPanel() {
               </>
             )}
             {loading && (
-              <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+              <div className="absolute inset-0 bg-paper/80 flex items-center justify-center">
                 <Loader2 className="h-5 w-5 animate-spin text-ink-soft" />
               </div>
             )}
@@ -114,7 +114,7 @@ export function ShouldIBuyPanel() {
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium",
                     VERDICT_TONE[result.verdict] === "success" && "bg-lime text-lime-ink",
-                    VERDICT_TONE[result.verdict] === "warning" && "bg-[#f4e6d8] text-warning",
+                    VERDICT_TONE[result.verdict] === "warning" && "bg-warning/15 text-warning",
                     VERDICT_TONE[result.verdict] === "neutral" && "bg-paper-alt text-ink-soft"
                   )}
                 >
@@ -143,7 +143,7 @@ export function ShouldIBuyPanel() {
               )}
 
               {result.concerns.length > 0 && (
-                <div className="rounded-xl bg-[#f4e6d8] px-3.5 py-2.5 text-sm text-warning">
+                <div className="rounded-xl bg-warning/15 px-3.5 py-2.5 text-sm text-warning">
                   <p className="font-medium mb-1">Potential issues</p>
                   <ul className="list-disc list-inside space-y-1">
                     {result.concerns.map((c, i) => (

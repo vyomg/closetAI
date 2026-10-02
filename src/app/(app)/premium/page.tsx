@@ -48,7 +48,7 @@ export default async function PremiumPage() {
       <h2 className="font-display text-2xl mb-5">Available now</h2>
       <div className="grid sm:grid-cols-2 gap-4 mb-12">
         {AVAILABLE_NOW.map((item) => (
-          <div key={item.title} className="rounded-2xl border border-line bg-white p-5">
+          <div key={item.title} className="rounded-2xl border border-line bg-paper-alt p-5">
             <div className="flex items-center gap-2.5 mb-2">
               <item.icon className="h-4 w-4 text-ink-soft shrink-0" strokeWidth={1.75} />
               <p className="font-medium text-sm">{item.title}</p>
@@ -75,7 +75,7 @@ export default async function PremiumPage() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-line bg-white p-7 sm:p-8 text-center">
+      <div className="rounded-2xl border border-line bg-paper-alt p-7 sm:p-8 text-center">
         <p className="font-display text-2xl mb-2">Premium is on its way.</p>
         <p className="text-sm text-stone max-w-md mx-auto mb-6">
           We&apos;re still finishing the details, including pricing. Nothing to set up yet — we&apos;ll let you know the

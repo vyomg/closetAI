@@ -23,7 +23,7 @@ export function ImportanceScale({
             onClick={() => onChange(n)}
             className={cn(
               "h-11 flex-1 rounded-xl border text-sm font-medium transition-colors cursor-pointer",
-              n === value ? "border-ink bg-ink text-paper" : "border-line bg-white text-ink-soft hover:border-ink/40"
+              n === value ? "border-ink bg-ink text-paper" : "border-line bg-paper-alt text-ink-soft hover:border-ink/40"
             )}
           >
             {n}

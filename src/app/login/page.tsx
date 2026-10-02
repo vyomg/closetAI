@@ -43,9 +43,9 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center px-6 py-16">
+    <div className="theme-dark-app bg-paper text-ink flex-1 flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-sm animate-fade-up">
-        <Brand href="/" size="sm" />
+        <Brand href="/" size="sm" className="text-ink" />
         <h1 className="font-display text-3xl mt-8 mb-2">Welcome back.</h1>
         <p className="text-sm text-stone mb-8">Log in to your wardrobe.</p>
 

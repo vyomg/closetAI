@@ -20,6 +20,29 @@
   --charcoal: #2a2a2c;
 }
 
+/* ============================================
+   Dark app-shell theme — scoped override, not a
+   global token flip. The landing page, and public
+   share links deliberately keep their light/dark
+   alternating rhythm (do not touch those). Everything
+   mounted inside this class — the authenticated app,
+   onboarding, login/signup — re-themes automatically
+   because every component already reads `--paper`,
+   `--ink`, etc. rather than hardcoded colors.
+   ============================================ */
+.theme-dark-app {
+  --paper: #0c0c0e;
+  --paper-alt: #19191b;
+  --ink: #f5f5f3;
+  --ink-soft: #c2c2bf;
+  --stone: #87877f;
+  --line: #2a2a2d;
+  --accent: #f5f5f3;
+  --accent-foreground: #0b0b0c;
+  --success: #7bdb93;
+  --warning: #f2a35f;
+}
+
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-alt: var(--paper-alt);
@@ -149,13 +172,29 @@ body {
   animation: drift-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Editorial floating words around a small number of hero titles — a gentle
+   bob + tilt, never a spin or anything that reads as a toy. See
+   components/FloatingWords.tsx for where this is used. */
+@keyframes float-word {
+  0%, 100% {
+    transform: translateY(0) rotate(var(--float-rot, -6deg));
+  }
+  50% {
+    transform: translateY(-6px) rotate(var(--float-rot, -6deg));
+  }
+}
+.animate-float-word {
+  animation: float-word 5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-fade-in,
   .animate-loading-sweep,
   .animate-spark-spin,
   .animate-spark-pop,
-  .animate-drift-in {
+  .animate-drift-in,
+  .animate-float-word {
     animation: none !important;
   }
   *,

@@ -127,27 +127,27 @@ function AnalyzingStatus() {
 
 function UploadCard({ entry }: { entry: UploadEntry }) {
   return (
-    <div className="rounded-2xl border border-line bg-white overflow-hidden animate-fade-up">
+    <div className="rounded-2xl border border-line bg-paper-alt overflow-hidden animate-fade-up">
       <div className="relative aspect-[4/5] bg-paper-alt">
         <Image src={entry.previewUrl} alt="" fill sizes="(max-width: 640px) 50vw, 25vw" className="object-cover" unoptimized />
         <div className="absolute inset-0 flex items-end p-3">
           {entry.status === "analyzing" && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/95 px-3 py-1.5 text-xs font-medium">
               <Loader2 className="h-3.5 w-3.5 animate-spin" /> Analyzing…
             </span>
           )}
           {entry.status === "done" && !entry.item?.aiUnavailable && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-success">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/95 px-3 py-1.5 text-xs font-medium text-success">
               <Check className="h-3.5 w-3.5" /> Added
             </span>
           )}
           {entry.status === "done" && entry.item?.aiUnavailable && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-warning">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/95 px-3 py-1.5 text-xs font-medium text-warning">
               <AlertTriangle className="h-3.5 w-3.5" /> Added — needs review
             </span>
           )}
           {entry.status === "error" && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-warning">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-paper/95 px-3 py-1.5 text-xs font-medium text-warning">
               <AlertTriangle className="h-3.5 w-3.5" /> Failed
             </span>
           )}

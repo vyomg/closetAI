@@ -127,7 +127,7 @@ export default function CalendarPage() {
           const dateStr = toISODate(day);
           const dayEntries = entriesByDate.get(dateStr) ?? [];
           return (
-            <div key={dateStr} className="min-h-28 rounded-xl border border-line bg-white p-2">
+            <div key={dateStr} className="min-h-28 rounded-xl border border-line bg-paper-alt p-2">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs text-stone">{day.getUTCDate()}</span>
                 <button onClick={() => openPicker(dateStr)} className="text-stone hover:text-ink cursor-pointer">
@@ -146,7 +146,7 @@ export default function CalendarPage() {
                   <p className="text-[10px] text-stone truncate">{e.outfit.occasion}</p>
                   <button
                     onClick={() => removeEntry(e.id)}
-                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 bg-white rounded-full p-0.5 border border-line cursor-pointer"
+                    className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 bg-paper-alt rounded-full p-0.5 border border-line cursor-pointer"
                   >
                     <X className="h-2.5 w-2.5" />
                   </button>
@@ -163,7 +163,7 @@ export default function CalendarPage() {
           const dateStr = toISODate(day);
           const dayEntries = entriesByDate.get(dateStr) ?? [];
           return (
-            <div key={dateStr} className="rounded-xl border border-line bg-white p-3 flex items-center gap-3">
+            <div key={dateStr} className="rounded-xl border border-line bg-paper-alt p-3 flex items-center gap-3">
               <div className="w-10 shrink-0 text-center">
                 <p className="text-xs text-stone">{day.toLocaleDateString("en-US", { weekday: "short" })}</p>
                 <p className="font-display text-lg">{day.getUTCDate()}</p>

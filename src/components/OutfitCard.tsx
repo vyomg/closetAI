@@ -103,14 +103,16 @@ export function OutfitCard({
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-white overflow-hidden animate-fade-up">
+    <div className="rounded-2xl border border-line bg-paper-alt overflow-hidden animate-fade-up">
       <div className="p-5 sm:p-7">
         <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
           <div>
             <p className="text-xs uppercase tracking-wide text-stone mb-1">
               {outfit.occasion} · {outfit.style}
             </p>
-            <p className="font-display text-xl">Score {outfit.overallScore}%</p>
+            <p className="font-display text-xl">
+              {outfit.isManual ? "Styled by you" : `Score ${outfit.overallScore}%`}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {onSaveToggle && (
@@ -144,7 +146,7 @@ export function OutfitCard({
                     <Shuffle className="h-3.5 w-3.5" /> {remixing ? "Remixing…" : "Remix"}
                   </button>
                   {remixOpen && (
-                    <div className="absolute right-0 top-full mt-1.5 z-10 w-48 rounded-xl border border-line bg-white shadow-[0_8px_30px_-12px_rgba(23,22,15,0.25)] py-1.5">
+                    <div className="absolute right-0 top-full mt-1.5 z-10 w-48 rounded-xl border border-line bg-paper-alt shadow-[0_8px_30px_-12px_rgba(23,22,15,0.25)] py-1.5">
                       {REMIX_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
@@ -197,17 +199,19 @@ export function OutfitCard({
         </div>
 
         {outfit.unmetConstraints && outfit.unmetConstraints.length > 0 && (
-          <div className="mt-5 flex items-start gap-2 text-xs text-warning bg-[#f4e6d8] rounded-xl px-3.5 py-2.5">
+          <div className="mt-5 flex items-start gap-2 text-xs text-warning bg-warning/15 rounded-xl px-3.5 py-2.5">
             <Shirt className="h-3.5 w-3.5 shrink-0 mt-0.5" />
             <span>{outfit.unmetConstraints.join(" ")}</span>
           </div>
         )}
 
-        <div className="mt-6 grid grid-cols-3 gap-3">
-          <ScorePill label="Style Match" value={outfit.styleMatch} />
-          <ScorePill label="Occasion Match" value={outfit.occasionMatch} />
-          <ScorePill label="Colour Harmony" value={outfit.colorHarmony} />
-        </div>
+        {!outfit.isManual && (
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            <ScorePill label="Style Match" value={outfit.styleMatch} />
+            <ScorePill label="Occasion Match" value={outfit.occasionMatch} />
+            <ScorePill label="Colour Harmony" value={outfit.colorHarmony} />
+          </div>
+        )}
 
         <p className="mt-6 text-sm text-ink-soft leading-relaxed">{outfit.explanation}</p>
 

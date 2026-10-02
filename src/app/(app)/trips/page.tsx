@@ -49,7 +49,7 @@ export default function TripsPage() {
             <Link
               key={trip.id}
               href={`/trips/${trip.id}`}
-              className="rounded-2xl border border-line bg-white p-5 hover:border-ink/30 transition-colors"
+              className="rounded-2xl border border-line bg-paper-alt p-5 hover:border-ink/30 transition-colors"
             >
               <p className="flex items-center gap-1.5 font-medium mb-1">
                 <MapPin className="h-4 w-4 text-ink-soft" /> {trip.destination}

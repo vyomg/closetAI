@@ -14,7 +14,7 @@ function ConfidenceBadge({ level }: { level?: string }) {
     <span
       className={cn(
         "text-[10px] uppercase tracking-wide rounded-full px-2 py-0.5",
-        level === "high" ? "bg-[#e3ebe0] text-success" : level === "medium" ? "bg-paper-alt text-ink-soft" : "bg-[#f4e6d8] text-warning"
+        level === "high" ? "bg-success/15 text-success" : level === "medium" ? "bg-paper-alt text-ink-soft" : "bg-warning/15 text-warning"
       )}
     >
       {level} confidence
@@ -47,7 +47,7 @@ export function PersonalAppearanceReview({
 
   if (profile.status === "FAILED") {
     return (
-      <div className="rounded-2xl bg-[#f4e6d8] p-5 text-sm text-warning">
+      <div className="rounded-2xl bg-warning/15 p-5 text-sm text-warning">
         {profile.errorMessage || "We couldn't analyze that photo."} You can go back and try again, or continue without it —
         your other style preferences already cover the essentials.
       </div>
@@ -56,7 +56,7 @@ export function PersonalAppearanceReview({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-line bg-white p-5">
+      <div className="rounded-2xl border border-line bg-paper-alt p-5">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
           <p className="font-medium text-sm">What matchin' noticed</p>

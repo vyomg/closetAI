@@ -112,7 +112,7 @@ export default function PackPage() {
 
         <div>
           {loading && (
-            <div className="rounded-2xl border border-line bg-white p-7">
+            <div className="rounded-2xl border border-line bg-paper-alt p-7">
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="aspect-[4/5] rounded-xl bg-paper-alt animate-pulse" />
@@ -123,7 +123,7 @@ export default function PackPage() {
 
           {!loading && result && (
             <div className="space-y-8">
-              <div className="rounded-2xl border border-line bg-white p-6">
+              <div className="rounded-2xl border border-line bg-paper-alt p-6">
                 {result.destinationWeather && (
                   <p className="text-xs text-stone mb-2">
                     {result.destinationWeather.city}
@@ -157,7 +157,7 @@ export default function PackPage() {
                   <h2 className="font-display text-2xl mb-4">Potentially worth buying</h2>
                   <div className="space-y-3">
                     {result.worthBuying.map((rec, i) => (
-                      <div key={i} className="rounded-2xl border border-line bg-white p-4 flex items-center justify-between gap-4">
+                      <div key={i} className="rounded-2xl border border-line bg-paper-alt p-4 flex items-center justify-between gap-4">
                         <div>
                           <p className="text-sm font-medium">
                             {rec.suggestedColor} {rec.subcategory}
@@ -176,7 +176,7 @@ export default function PackPage() {
                   <h2 className="font-display text-2xl mb-4">Outfit combinations</h2>
                   <div className="space-y-4">
                     {result.outfitCombinations.map((combo, i) => (
-                      <div key={i} className="rounded-2xl border border-line bg-white p-5">
+                      <div key={i} className="rounded-2xl border border-line bg-paper-alt p-5">
                         <p className="text-xs uppercase tracking-wide text-stone mb-3">{combo.occasion}</p>
                         <div className="flex gap-3">
                           {combo.items.map((item) => (

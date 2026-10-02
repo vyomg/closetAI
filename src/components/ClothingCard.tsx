@@ -7,7 +7,7 @@ export function ClothingCard({ item }: { item: ClothingItemDTO }) {
   return (
     <Link
       href={`/wardrobe/${item.id}`}
-      className="group block rounded-2xl border border-line bg-white overflow-hidden transition-shadow hover:shadow-[0_8px_30px_-12px_rgba(23,22,15,0.15)]"
+      className="group block rounded-2xl border border-line bg-paper-alt overflow-hidden transition-shadow hover:shadow-[0_8px_30px_-12px_rgba(23,22,15,0.15)]"
     >
       <div className="relative aspect-[4/5] bg-paper-alt overflow-hidden">
         <Image
@@ -23,7 +23,7 @@ export function ClothingCard({ item }: { item: ClothingItemDTO }) {
           </Badge>
         )}
         {item.isDemo && (
-          <Badge className="absolute top-3 right-3 bg-white/90">Demo</Badge>
+          <Badge className="absolute top-3 right-3 bg-paper/90">Demo</Badge>
         )}
       </div>
       <div className="p-4">

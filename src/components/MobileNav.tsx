@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Home, Shirt, ShoppingBag, Menu, X, Luggage, Layers, UserCircle, Settings, LogOut, Crown, BarChart3, Boxes, Trophy, CalendarDays, MessageSquareHeart } from "lucide-react";
+import { Home, Shirt, ShoppingBag, Menu, X, Luggage, Layers, UserCircle, Settings, LogOut, Crown, BarChart3, Boxes, Trophy, CalendarDays, MessageSquareHeart, MessageCircle, Shuffle, Heart } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Spark } from "@/components/Brand";
 import type { LucideIcon } from "lucide-react";
@@ -19,7 +19,9 @@ const TABS = [
 ];
 
 const MORE_LINKS: { href: string; label: string; icon: LucideIcon; group?: string }[] = [
-  { href: "/outfits", label: "Outfits", icon: Layers, group: "Style" },
+  { href: "/chat", label: "Chat Now", icon: MessageCircle, group: "Style" },
+  { href: "/outfits", label: "Outfits", icon: Layers },
+  { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle },
   { href: "/style-profile", label: "Style DNA", icon: UserCircle },
   { href: "/calendar", label: "Calendar", icon: CalendarDays, group: "Plan" },
   { href: "/trips", label: "Trips", icon: Luggage },
@@ -29,10 +31,15 @@ const MORE_LINKS: { href: string; label: string; icon: LucideIcon; group?: strin
   { href: "/wardrobe/capsule", label: "Capsule Wardrobe", icon: Boxes },
   { href: "/premium", label: "Premium", icon: Crown },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/connect", label: "Connect With Us", icon: Heart },
 ];
 
+// See the matching comment in Sidebar.tsx — "/outfits" has its own
+// distinct nav entries for sub-routes now, so it needs an exact match too.
+const EXACT_ONLY = new Set(["/dashboard", "/outfits"]);
+
 function isActivePath(pathname: string, href: string) {
-  return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  return pathname === href || (!EXACT_ONLY.has(href) && pathname.startsWith(href));
 }
 
 export function MobileNav() {

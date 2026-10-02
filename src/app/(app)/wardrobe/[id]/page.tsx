@@ -191,7 +191,7 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
 
         <div>
           {item.uncertainFields.length > 0 && (
-            <div className="mb-6 rounded-xl bg-[#f4e6d8] px-4 py-3 text-sm text-warning flex gap-2">
+            <div className="mb-6 rounded-xl bg-warning/15 px-4 py-3 text-sm text-warning flex gap-2">
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>
                 The AI wasn't fully confident about: {item.uncertainFields.join(", ")}. Please review and correct

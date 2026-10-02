@@ -257,7 +257,7 @@ export function OutfitGenerator({
       <div>
         {loading && <GeneratingState />}
         {!loading && result && anchorItem && result.items.some((i) => i.id === anchorItem.id) && (
-          <div className="rounded-2xl border border-line bg-white p-6 mb-5">
+          <div className="rounded-2xl border border-line bg-paper-alt p-6 mb-5">
             <MatchinOrbit
               anchor={result.items.find((i) => i.id === anchorItem.id)!}
               orbiting={result.items.filter((i) => i.id !== anchorItem.id)}
@@ -293,15 +293,27 @@ function IdleState() {
   );
 }
 
+const THINKING_STEPS = ["checking your wardrobe...", "balancing colours...", "building your fit..."];
+
 function GeneratingState() {
+  const [stepIndex, setStepIndex] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setStepIndex((i) => (i + 1) % THINKING_STEPS.length), 1100);
+    return () => clearInterval(id);
+  }, []);
+
   return (
-    <div className="rounded-2xl border border-line bg-white p-7">
+    <div className="rounded-2xl border border-line bg-paper-alt p-7">
+      <p className="font-display text-lg lowercase mb-5 flex items-center gap-1.5">
+        matchin&apos;s thinkin&apos; <Spark className="h-3.5 w-3.5 text-lime animate-spark-spin" />
+      </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="aspect-[4/5] rounded-xl bg-paper-alt animate-pulse" />
+          <div key={i} className="aspect-[4/5] rounded-xl bg-charcoal animate-pulse" style={{ animationDelay: `${i * 120}ms` }} />
         ))}
       </div>
-      <p className="text-sm text-stone mt-6">Reasoning through colour, formality and fit…</p>
+      <p className="text-sm text-stone mt-6 lowercase">{THINKING_STEPS[stepIndex]}</p>
     </div>
   );
 }

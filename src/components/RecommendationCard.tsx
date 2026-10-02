@@ -35,7 +35,7 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
   const swatch = COLOR_SWATCH[recommendation.suggestedColor] ?? "#c8c2b4";
 
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 sm:p-7 animate-fade-up">
+    <div className="rounded-2xl border border-line bg-paper-alt p-5 sm:p-7 animate-fade-up">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div className="flex items-center gap-3.5 min-w-0">
           <div
@@ -57,7 +57,7 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       </div>
 
       {recommendation.skipRecommended ? (
-        <div className="flex items-start gap-2 rounded-xl bg-[#f4e6d8] px-3.5 py-3 text-sm text-warning mb-5">
+        <div className="flex items-start gap-2 rounded-xl bg-warning/15 px-3.5 py-3 text-sm text-warning mb-5">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>
             <strong>Don&apos;t buy this yet.</strong> You already own {recommendation.duplicateCount} very similar item

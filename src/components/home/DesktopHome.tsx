@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Plus, Luggage, Wand2, ShoppingBag, ArrowRight } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { Spark } from "@/components/Brand";
+import { FloatingWords } from "@/components/FloatingWords";
 import { DashboardStats } from "@/components/DashboardStats";
 import { WeatherLine } from "@/components/home/WeatherLine";
 import { StyleProfileNudge } from "@/components/home/StyleProfileNudge";
@@ -19,11 +20,12 @@ export function DesktopHome({ data }: { data: HomeData }) {
 
       {/* Hero + weather merged into one dark card — matchin's "today's match" moment. */}
       <div className="rounded-2xl bg-graphite text-white p-8 flex items-center justify-between gap-8 mb-10">
-        <div className="flex-1 min-w-0">
+        <div className="relative flex-1 min-w-0">
+          <FloatingWords words={["STYLE", "MATCH", "FIT", "WEAR"]} />
           <p className="text-white/40 mb-1 lowercase">
             {greeting().toLowerCase()}, {firstName}.
           </p>
-          <h1 className="font-display text-4xl mb-5 flex items-center gap-2">
+          <h1 className="font-display text-4xl mb-5 flex items-center gap-2 relative">
             today&apos;s match <Spark className="h-6 w-6 text-lime" />
           </h1>
           <p className="text-white/50 mb-6 max-w-lg text-sm">
@@ -55,7 +57,7 @@ export function DesktopHome({ data }: { data: HomeData }) {
       </div>
 
       <div className="grid grid-cols-[1.4fr_1fr] gap-6 mb-10 items-stretch">
-        <section className="rounded-2xl border border-line bg-white p-7">
+        <section className="rounded-2xl border border-line bg-paper-alt p-7">
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-display text-2xl">Today&apos;s Outfit</h2>
             {todaysOutfit && (
@@ -69,7 +71,7 @@ export function DesktopHome({ data }: { data: HomeData }) {
 
         <Link
           href="/buy"
-          className="rounded-2xl border border-line bg-white p-7 flex flex-col justify-between hover:border-ink/30 transition-colors"
+          className="rounded-2xl border border-line bg-paper-alt p-7 flex flex-col justify-between hover:border-ink/30 transition-colors"
         >
           <div>
             <ShoppingBag className="h-5 w-5 text-ink-soft mb-3" strokeWidth={1.75} />
@@ -121,7 +123,7 @@ export function DesktopHome({ data }: { data: HomeData }) {
               <Link
                 key={outfit.id}
                 href="/outfits"
-                className="rounded-2xl border border-line bg-white p-5 flex gap-3 hover:border-ink/30 transition-colors"
+                className="rounded-2xl border border-line bg-paper-alt p-5 flex gap-3 hover:border-ink/30 transition-colors"
               >
                 {outfit.items.slice(0, 4).map((oi) => (
                   <div key={oi.id} className="relative aspect-[4/5] w-16 rounded-lg overflow-hidden bg-paper-alt shrink-0">
@@ -153,7 +155,7 @@ function QuickAction({ href, icon, label }: { href: string; icon: React.ReactNod
   return (
     <Link
       href={href}
-      className="rounded-2xl border border-line bg-white p-5 flex flex-col items-center justify-center gap-2.5 text-center hover:border-ink/30 transition-colors"
+      className="rounded-2xl border border-line bg-paper-alt p-5 flex flex-col items-center justify-center gap-2.5 text-center hover:border-ink/30 transition-colors"
     >
       <span className="text-ink-soft">{icon}</span>
       <span className="text-sm font-medium">{label}</span>

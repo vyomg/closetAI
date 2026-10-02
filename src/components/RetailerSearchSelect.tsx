@@ -49,7 +49,7 @@ export function RetailerSearchSelect({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search brands or stores…"
-          className="w-full rounded-xl border border-line bg-white pl-9 pr-4 py-2.5 text-sm outline-none focus:border-ink"
+          className="w-full rounded-xl border border-line bg-paper-alt pl-9 pr-4 py-2.5 text-sm outline-none focus:border-ink"
         />
       </div>
 

@@ -94,7 +94,7 @@ export function PersonalAppearanceUpload({
         )}
 
         {uploading && (
-          <div className="absolute inset-0 bg-white/85 flex flex-col items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-paper/85 flex flex-col items-center justify-center gap-2">
             <Loader2 className="h-5 w-5 animate-spin text-ink-soft" />
             <p className="text-sm text-ink-soft">Analyzing your photo…</p>
           </div>

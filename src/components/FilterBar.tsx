@@ -61,12 +61,12 @@ export function FilterBar({
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder="Search wardrobe…"
-            className="rounded-full border border-line bg-white px-4 py-2 text-sm outline-none focus:border-ink w-52"
+            className="rounded-full border border-line bg-paper-alt px-4 py-2 text-sm outline-none focus:border-ink w-52"
           />
           <select
             value={sort}
             onChange={(e) => onSort(e.target.value as SortOption)}
-            className="shrink-0 rounded-full border border-line bg-white px-3.5 py-2 text-sm outline-none focus:border-ink cursor-pointer"
+            className="shrink-0 rounded-full border border-line bg-paper-alt px-3.5 py-2 text-sm outline-none focus:border-ink cursor-pointer"
           >
             <option value="recent">Recently added</option>
             <option value="mostWorn">Most worn</option>
@@ -82,11 +82,11 @@ export function FilterBar({
           value={search}
           onChange={(e) => onSearch(e.target.value)}
           placeholder="Search wardrobe…"
-          className="flex-1 min-w-0 rounded-full border border-line bg-white px-4 py-2.5 text-sm outline-none focus:border-ink"
+          className="flex-1 min-w-0 rounded-full border border-line bg-paper-alt px-4 py-2.5 text-sm outline-none focus:border-ink"
         />
         <button
           onClick={() => setSheetOpen(true)}
-          className="relative shrink-0 flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2.5 text-sm cursor-pointer min-h-11"
+          className="relative shrink-0 flex items-center gap-1.5 rounded-full border border-line bg-paper-alt px-4 py-2.5 text-sm cursor-pointer min-h-11"
         >
           <SlidersHorizontal className="h-4 w-4" strokeWidth={1.75} />
           Filters

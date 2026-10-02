@@ -18,6 +18,9 @@ import {
   Trophy,
   CalendarDays,
   MessageSquareHeart,
+  MessageCircle,
+  Shuffle,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Brand, Spark } from "@/components/Brand";
@@ -39,7 +42,9 @@ const GROUPS: { label: string; links: { href: string; label: string; icon: Lucid
   {
     label: "Style",
     links: [
+      { href: "/chat", label: "Chat Now", icon: MessageCircle },
       { href: "/outfits", label: "Outfits", icon: Layers },
+      { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle },
       { href: "/style-profile", label: "Style DNA", icon: UserCircle },
     ],
   },
@@ -62,12 +67,19 @@ const GROUPS: { label: string; links: { href: string; label: string; icon: Lucid
       { href: "/wardrobe/capsule", label: "Capsule Wardrobe", icon: Boxes },
       { href: "/ask-a-friend", label: "Ask a Friend", icon: MessageSquareHeart },
       { href: "/settings", label: "Settings", icon: Settings },
+      { href: "/connect", label: "Connect With Us", icon: Heart },
     ],
   },
 ];
 
+// "/outfits" also has its own distinct nav entries for sub-routes
+// (Outfit Playground, Challenges), so — like "/dashboard" — it needs an
+// exact match rather than a prefix match, or both "Outfits" and whichever
+// sub-route is open would light up at once.
+const EXACT_ONLY = new Set(["/dashboard", "/outfits"]);
+
 function isActivePath(pathname: string, href: string) {
-  return pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+  return pathname === href || (!EXACT_ONLY.has(href) && pathname.startsWith(href));
 }
 
 export function Sidebar({ userName, userEmail }: { userName: string; userEmail: string }) {

@@ -71,7 +71,7 @@ export default function BuyClothesPage() {
           {loading && (
             <div className="grid sm:grid-cols-2 gap-5">
               {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i} className="rounded-2xl border border-line bg-white p-7">
+                <div key={i} className="rounded-2xl border border-line bg-paper-alt p-7">
                   <div className="h-14 w-11 rounded-lg bg-paper-alt animate-pulse mb-4" />
                   <div className="h-4 w-2/3 bg-paper-alt rounded animate-pulse mb-2" />
                   <div className="h-3 w-1/2 bg-paper-alt rounded animate-pulse" />
@@ -92,13 +92,13 @@ export default function BuyClothesPage() {
                     </span>
                   )}
                   {result.currency && (
-                    <span className="rounded-full bg-white px-2.5 py-1">
+                    <span className="rounded-full bg-paper-alt px-2.5 py-1">
                       {getCurrencyOption(result.currency).symbol} {result.currency}
                       {result.currencyIsAuto ? " · Auto" : " · Manual"}
                     </span>
                   )}
                   {!result.currency && (
-                    <span className="rounded-full bg-white px-2.5 py-1">Currency: waiting for location</span>
+                    <span className="rounded-full bg-paper-alt px-2.5 py-1">Currency: waiting for location</span>
                   )}
                 </div>
 

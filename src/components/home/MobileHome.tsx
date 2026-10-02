@@ -99,7 +99,7 @@ function ActionTile({
       className={
         emphasize
           ? "rounded-2xl bg-ink text-paper p-5 flex flex-col justify-between min-h-28 active:scale-[0.98] transition-transform"
-          : "rounded-2xl border border-line bg-white p-5 flex flex-col justify-between min-h-28 active:scale-[0.98] transition-transform"
+          : "rounded-2xl border border-line bg-paper-alt p-5 flex flex-col justify-between min-h-28 active:scale-[0.98] transition-transform"
       }
     >
       {icon}

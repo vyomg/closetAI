@@ -76,7 +76,7 @@ export default function OnboardingPage() {
   })();
 
   return (
-    <div className="flex-1 flex items-start sm:items-center justify-center px-6 py-14">
+    <div className="theme-dark-app bg-paper text-ink flex-1 flex items-start sm:items-center justify-center px-6 py-14">
       <div className="w-full max-w-xl animate-fade-up">
         <div className="flex items-center gap-2 mb-10">
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (

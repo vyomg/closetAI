@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function DashboardStats({ itemCount, styleTags }: { itemCount: number; styleTags: string[] }) {
   return (
-    <div className="rounded-2xl border border-line bg-white grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-line">
+    <div className="rounded-2xl border border-line bg-paper-alt grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-line">
       <Link href="/wardrobe" className="p-6 hover:bg-paper-alt transition-colors">
         <p className="text-sm text-stone mb-2">Your Wardrobe</p>
         <p className="font-display text-3xl">{itemCount} items</p>

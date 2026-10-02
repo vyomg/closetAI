@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MapPin, Loader2, X, Search, ChevronRight, Sparkles, ShoppingBag, UserPlus } from "lucide-react";
+import { MapPin, Loader2, X, Search, ChevronRight, Sparkles, ShoppingBag, UserPlus, Heart } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select } from "@/components/ui/Field";
 import { detectLocation, getLocationPermissionState, roundCoordinate, type LocationFailureReason } from "@/lib/location";
@@ -231,7 +231,7 @@ export default function SettingsPage() {
           )}
 
           {locationState === "success" && city && (
-            <div className="rounded-xl bg-[#e3ebe0] px-3.5 py-2.5 text-sm text-success mb-3 flex items-center justify-between gap-2">
+            <div className="rounded-xl bg-success/15 px-3.5 py-2.5 text-sm text-success mb-3 flex items-center justify-between gap-2">
               <span>
                 {city}
                 {admin1 ? `, ${admin1}` : ""}
@@ -281,7 +281,7 @@ export default function SettingsPage() {
               {searchingCity && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 animate-spin text-stone" />}
             </div>
             {citySearchResults.length > 0 && (
-              <div className="mt-2 rounded-xl border border-line bg-white overflow-hidden divide-y divide-line">
+              <div className="mt-2 rounded-xl border border-line bg-paper-alt overflow-hidden divide-y divide-line">
                 {citySearchResults.map((candidate, i) => (
                   <button
                     key={i}
@@ -329,10 +329,11 @@ export default function SettingsPage() {
 
         <div>
           <p className="text-xs uppercase tracking-wide text-stone mb-3">More</p>
-          <div className="rounded-2xl border border-line bg-white divide-y divide-line overflow-hidden">
+          <div className="rounded-2xl border border-line bg-paper-alt divide-y divide-line overflow-hidden">
             <SettingsLink href="/style-profile" icon={<Sparkles className="h-4 w-4" />} label="Style Profile" />
             <SettingsLink href="/buy" icon={<ShoppingBag className="h-4 w-4" />} label="Shopping Preferences" />
             <SettingsLink href="/ask-a-friend" icon={<UserPlus className="h-4 w-4" />} label="Ask a Friend" />
+            <SettingsLink href="/connect" icon={<Heart className="h-4 w-4" />} label="Connect With Us" />
           </div>
         </div>
       </div>

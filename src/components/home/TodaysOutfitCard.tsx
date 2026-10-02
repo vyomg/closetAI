@@ -45,7 +45,7 @@ export function TodaysOutfitCard({ initial, compact = false }: { initial: HomeRe
 
   if (loading) {
     return (
-      <div className={compact ? "rounded-2xl border border-line bg-white p-4 flex items-center gap-3" : "rounded-xl border border-dashed border-line py-10 text-center"}>
+      <div className={compact ? "rounded-2xl border border-line bg-paper-alt p-4 flex items-center gap-3" : "rounded-xl border border-dashed border-line py-10 text-center"}>
         <Loader2 className="h-4 w-4 animate-spin text-ink-soft mx-auto" />
         {!compact && <p className="text-sm text-stone mt-2">Styling today's outfit…</p>}
       </div>
@@ -80,7 +80,7 @@ export function TodaysOutfitCard({ initial, compact = false }: { initial: HomeRe
   }
 
   const content = compact ? (
-    <Link href="/outfits" className="rounded-2xl border border-line bg-white p-4 flex items-center gap-3 hover:border-ink/30 transition-colors block">
+    <Link href="/outfits" className="rounded-2xl border border-line bg-paper-alt p-4 flex items-center gap-3 hover:border-ink/30 transition-colors block">
       <div className="flex gap-2 shrink-0">
         {outfit.items.slice(0, 3).map((oi) => (
           <div key={oi.id} className="relative aspect-[4/5] w-14 rounded-lg overflow-hidden bg-paper-alt border border-line">

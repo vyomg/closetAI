@@ -217,6 +217,10 @@ export type OutfitDTO = {
   overallScore: number;
   adventureLevel: number;
   isSaved: boolean;
+  // true only for outfits hand-built in the Outfit Playground — never
+  // scored by Gemini/outfitValidator. Optional so older call sites that
+  // don't pass it default safely to "treat as generated".
+  isManual?: boolean;
   createdAt: string;
   lastWornAt?: string | null;
   unmetConstraints?: string[];

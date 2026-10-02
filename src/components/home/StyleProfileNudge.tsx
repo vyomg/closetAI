@@ -32,8 +32,8 @@ export function StyleProfileNudge({ compact = false }: { compact?: boolean }) {
     <div
       className={
         compact
-          ? "rounded-2xl border border-line bg-white p-4 flex items-center gap-3 mb-6"
-          : "rounded-2xl border border-line bg-white p-5 flex items-center justify-between gap-4 mb-8"
+          ? "rounded-2xl border border-line bg-paper-alt p-4 flex items-center gap-3 mb-6"
+          : "rounded-2xl border border-line bg-paper-alt p-5 flex items-center justify-between gap-4 mb-8"
       }
     >
       <div className="flex items-center gap-3 min-w-0">

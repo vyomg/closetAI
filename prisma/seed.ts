@@ -1,11 +1,15 @@
 // Populates a demo account so the app is browsable immediately without
 // uploading real photos. Demo items are flagged isDemo=true and clearly
 // distinguished from real user data (see the "Demo" badge on ClothingCard).
+//
+// Images are real clothing photographs — not generated artwork — reused
+// from this project's own early testing uploads (see public/demo-wardrobe/
+// and the git history around the first wardrobe photos taken for this app).
+// There is no SVG/shape generator involved; every item here points at an
+// actual photo of an actual piece of clothing, the same way a real user's
+// upload does.
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
-import { buildDemoSvg } from "../scripts/demoImage";
 
 const db = new PrismaClient();
 
@@ -28,25 +32,21 @@ type SeedItem = {
   occasions: string[];
   pairings: string[];
   tags?: string[];
+  imageUrl: string;
 };
 
 const ITEMS: SeedItem[] = [
-  { name: "White T-shirt", category: "Tops", subcategory: "T-shirt", primaryColor: "White", pattern: "Solid", material: "Cotton", fit: "Regular", style: "Minimal", formality: 1, season: ["Spring", "Summer"], sleeveLength: "Short sleeve", occasions: ["Everyday", "Casual"], pairings: ["Dark denim", "Black trousers", "White sneakers"], tags: ["basic", "layering"] },
-  { name: "Black T-shirt", category: "Tops", subcategory: "T-shirt", primaryColor: "Black", pattern: "Solid", material: "Cotton", fit: "Regular", style: "Minimal", formality: 1, season: ["Spring", "Summer", "Fall"], sleeveLength: "Short sleeve", occasions: ["Everyday", "Casual"], pairings: ["Grey trousers", "Dark denim", "Black sneakers"], tags: ["basic"] },
-  { name: "Navy Polo", category: "Tops", subcategory: "Polo", primaryColor: "Navy", pattern: "Solid", material: "Pique cotton", fit: "Regular", style: "Smart Casual", formality: 3, season: ["Spring", "Summer"], sleeveLength: "Short sleeve", occasions: ["Casual dinner", "School", "Smart Casual"], pairings: ["Beige chinos", "Grey trousers", "White sneakers"], tags: ["preppy"] },
-  { name: "White Oxford Shirt", category: "Tops", subcategory: "Shirt", primaryColor: "White", pattern: "Solid", material: "Cotton oxford", fit: "Regular", style: "Classic", formality: 4, season: ["Spring", "Fall", "Winter"], sleeveLength: "Long sleeve", occasions: ["Business", "Interview", "Presentation"], pairings: ["Navy blazer", "Grey trousers", "Brown loafers"], tags: ["office"] },
-  { name: "Grey Crewneck", category: "Tops", subcategory: "Crewneck", primaryColor: "Grey", pattern: "Solid", material: "Cotton fleece", fit: "Regular", style: "Relaxed", formality: 2, season: ["Fall", "Winter"], sleeveLength: "Long sleeve", occasions: ["Everyday", "Travel"], pairings: ["Dark denim", "Joggers", "White sneakers"], tags: ["cozy"] },
-  { name: "Beige Chinos", category: "Bottoms", subcategory: "Chinos", primaryColor: "Beige", pattern: "Solid", material: "Cotton twill", fit: "Regular", style: "Smart Casual", formality: 3, season: ["Spring", "Summer", "Fall"], occasions: ["Casual dinner", "Smart Casual", "School"], pairings: ["Navy polo", "White shirt", "Brown loafers"], tags: [] },
-  { name: "Dark Blue Jeans", category: "Bottoms", subcategory: "Jeans", primaryColor: "Navy", pattern: "Solid", material: "Denim", fit: "Regular", style: "Classic", formality: 2, season: ["Fall", "Winter", "Spring"], occasions: ["Everyday", "Casual", "Date"], pairings: ["White t-shirt", "Grey crewneck", "White sneakers"], tags: [] },
-  { name: "Grey Trousers", category: "Bottoms", subcategory: "Trousers", primaryColor: "Grey", pattern: "Solid", material: "Wool blend", fit: "Regular", style: "Formal", formality: 4, season: ["Fall", "Winter"], occasions: ["Business", "Interview", "Formal Event"], pairings: ["White Oxford shirt", "Navy blazer", "Black formal shoes"], tags: [] },
-  { name: "Black Trousers", category: "Bottoms", subcategory: "Trousers", primaryColor: "Black", pattern: "Solid", material: "Wool blend", fit: "Regular", style: "Formal", formality: 4, season: ["Fall", "Winter", "Spring"], occasions: ["Business", "Formal Event", "Dinner"], pairings: ["White shirt", "Black formal shoes", "Silver watch"], tags: [] },
-  { name: "White Sneakers", category: "Shoes", subcategory: "Sneakers", primaryColor: "White", pattern: "Solid", material: "Leather", fit: "Regular", style: "Minimal", formality: 2, season: ["Spring", "Summer", "Fall"], occasions: ["Everyday", "Casual", "Smart Casual"], pairings: ["Dark denim", "Navy polo", "Beige chinos"], tags: ["versatile"] },
-  { name: "Black Sneakers", category: "Shoes", subcategory: "Sneakers", primaryColor: "Black", pattern: "Solid", material: "Leather", fit: "Regular", style: "Minimal", formality: 2, season: ["Fall", "Winter", "Spring"], occasions: ["Everyday", "Casual"], pairings: ["Black t-shirt", "Grey trousers"], tags: [] },
-  { name: "Brown Loafers", category: "Shoes", subcategory: "Loafers", primaryColor: "Brown", pattern: "Solid", material: "Leather", fit: "Regular", style: "Smart Casual", formality: 3, season: ["Spring", "Fall"], occasions: ["Smart Casual", "Dinner", "School"], pairings: ["Beige chinos", "Navy polo", "White Oxford shirt"], tags: [] },
-  { name: "Black Formal Shoes", category: "Shoes", subcategory: "Formal shoes", primaryColor: "Black", pattern: "Solid", material: "Leather", fit: "Regular", style: "Formal", formality: 5, season: ["Fall", "Winter", "Spring"], occasions: ["Business", "Formal Event", "Wedding", "Interview"], pairings: ["Black trousers", "Grey trousers", "White Oxford shirt"], tags: [] },
-  { name: "Navy Blazer", category: "Outerwear", subcategory: "Blazer", primaryColor: "Navy", pattern: "Solid", material: "Wool blend", fit: "Regular", style: "Classic", formality: 4, season: ["Fall", "Spring", "Winter"], occasions: ["Business", "Interview", "Presentation", "Dinner"], pairings: ["White Oxford shirt", "Grey trousers", "Brown loafers"], tags: [] },
-  { name: "Black Belt", category: "Accessories", subcategory: "Belt", primaryColor: "Black", pattern: "Solid", material: "Leather", fit: "Regular", style: "Classic", formality: 3, season: [], occasions: ["Business", "Smart Casual", "Formal Event"], pairings: ["Black trousers", "Black formal shoes"], tags: [] },
-  { name: "Silver Watch", category: "Accessories", subcategory: "Watch", primaryColor: "Grey", pattern: "Solid", material: "Stainless steel", fit: "Regular", style: "Classic", formality: 3, season: [], occasions: ["Business", "Dinner", "Everyday"], pairings: ["Any outfit"], tags: ["everyday"] },
+  { name: "Pink Shirt", category: "Tops", subcategory: "Shirt", primaryColor: "Pink", pattern: "Solid", fit: "Regular", style: "Classic", formality: 3, season: ["Spring", "Fall"], sleeveLength: "Long sleeve", occasions: ["Casual dinner", "Smart Casual", "Date"], pairings: ["Light Blue Jeans", "Black Sneakers"], tags: [], imageUrl: "/demo-wardrobe/pink-shirt.jpg" },
+  { name: "Black Polo", category: "Tops", subcategory: "Polo", primaryColor: "Black", pattern: "Solid", fit: "Regular", style: "Smart Casual", formality: 3, season: ["Spring", "Summer"], sleeveLength: "Short sleeve", occasions: ["Casual dinner", "School", "Smart Casual"], pairings: ["Black Jeans", "White Sneakers"], tags: ["preppy"], imageUrl: "/demo-wardrobe/black-polo.jpg" },
+  { name: "Green T-shirt", category: "Tops", subcategory: "T-shirt", primaryColor: "Green", pattern: "Solid", fit: "Regular", style: "Streetwear", formality: 1, season: ["Spring", "Summer"], sleeveLength: "Short sleeve", occasions: ["Everyday", "Casual"], pairings: ["Light Blue Jeans", "White Sneakers"], tags: ["basic"], imageUrl: "/demo-wardrobe/green-tshirt.jpg" },
+  { name: "Orange Graphic Tee", category: "Tops", subcategory: "T-shirt", primaryColor: "Orange", pattern: "Graphic print", fit: "Oversized", style: "Streetwear", formality: 1, season: ["Spring", "Summer"], sleeveLength: "Short sleeve", occasions: ["Everyday", "Casual"], pairings: ["Black Jeans", "Black Sneakers"], tags: ["graphic"], imageUrl: "/demo-wardrobe/orange-graphic-tee.jpg" },
+  { name: "Black Jeans", category: "Bottoms", subcategory: "Jeans", primaryColor: "Black", pattern: "Solid", fit: "Regular", style: "Classic", formality: 2, season: ["Fall", "Winter", "Spring"], occasions: ["Everyday", "Casual", "Date"], pairings: ["Black Polo", "Orange Graphic Tee", "White Sneakers"], tags: [], imageUrl: "/demo-wardrobe/black-jeans.jpg" },
+  { name: "Light Blue Jeans", category: "Bottoms", subcategory: "Jeans", primaryColor: "Light Blue", pattern: "Solid", fit: "Regular", style: "Casual", formality: 1, season: ["Spring", "Summer", "Fall"], occasions: ["Everyday", "Casual"], pairings: ["Green T-shirt", "Pink Shirt", "White Sneakers"], tags: [], imageUrl: "/demo-wardrobe/light-blue-jeans.jpg" },
+  { name: "Sage Trousers", category: "Bottoms", subcategory: "Trousers", primaryColor: "Sage Green", pattern: "Solid", fit: "Regular", style: "Casual", formality: 2, season: ["Spring", "Fall"], occasions: ["Everyday", "Smart Casual"], pairings: ["Black Polo", "Black Sneakers"], tags: [], imageUrl: "/demo-wardrobe/sage-trousers.jpg" },
+  { name: "White Sneakers", category: "Shoes", subcategory: "Sneakers", primaryColor: "White", pattern: "Solid", fit: "Regular", style: "Athletic", formality: 1, season: ["Spring", "Summer", "Fall"], occasions: ["Everyday", "Casual", "Smart Casual"], pairings: ["Light Blue Jeans", "Black Polo"], tags: ["versatile"], imageUrl: "/demo-wardrobe/white-sneakers.jpg" },
+  { name: "Black Sneakers", category: "Shoes", subcategory: "Sneakers", primaryColor: "Black", pattern: "Solid", fit: "Regular", style: "Casual", formality: 1, season: ["Fall", "Winter", "Spring"], occasions: ["Everyday", "Casual"], pairings: ["Black Jeans", "Orange Graphic Tee"], tags: [], imageUrl: "/demo-wardrobe/black-sneakers.jpg" },
+  { name: "Navy Cap", category: "Accessories", subcategory: "Cap", primaryColor: "Navy", pattern: "Solid", fit: "Regular", style: "Casual", formality: 1, season: [], occasions: ["Everyday", "Casual"], pairings: ["Green T-shirt", "Light Blue Jeans"], tags: [], imageUrl: "/demo-wardrobe/navy-cap.jpg" },
+  { name: "Black Watch", category: "Accessories", subcategory: "Watch", primaryColor: "Black", pattern: "Solid", fit: "Regular", style: "Minimal", formality: 3, season: [], occasions: ["Everyday", "Smart Casual", "Date"], pairings: ["Any outfit"], tags: ["everyday"], imageUrl: "/demo-wardrobe/black-watch.jpg" },
 ];
 
 async function main() {
@@ -60,17 +60,17 @@ async function main() {
       email: DEMO_EMAIL,
       passwordHash,
       onboarded: true,
-      preferredStyles: JSON.stringify(["Smart Casual", "Minimal", "Classic"]),
-      usualClothing: "Clean, neutral pieces that mix easily — nothing too flashy.",
-      occasions: JSON.stringify(["Everyday", "School", "Business", "Dinner"]),
+      preferredStyles: JSON.stringify(["Streetwear", "Casual", "Smart Casual"]),
+      usualClothing: "Clean, easy pieces that mix without much thought — nothing too flashy.",
+      occasions: JSON.stringify(["Everyday", "Casual", "Smart Casual"]),
       fitPreference: "Regular",
-      colorsLove: JSON.stringify(["Navy", "White", "Beige", "Grey", "Black"]),
-      colorsAvoid: JSON.stringify(["Yellow", "Orange"]),
-      shoePreference: JSON.stringify(["Sneakers", "Loafers"]),
-      adventurousness: 2,
+      colorsLove: JSON.stringify(["Black", "White", "Navy"]),
+      colorsAvoid: JSON.stringify(["Yellow"]),
+      shoePreference: JSON.stringify(["Sneakers"]),
+      adventurousness: 3,
       comfortImportance: 4,
-      fashionImportance: 4,
-      formalImportance: 3,
+      fashionImportance: 3,
+      formalImportance: 2,
       city: "New York",
     },
   });
@@ -82,23 +82,11 @@ async function main() {
     return;
   }
 
-  const dir = path.join(process.cwd(), "public", "demo-images");
-  await mkdir(dir, { recursive: true });
-
   for (const item of ITEMS) {
-    const svg = buildDemoSvg({
-      category: item.category,
-      subcategory: item.subcategory,
-      primaryColor: item.primaryColor,
-      pattern: item.pattern ?? "Solid",
-    });
-    const filename = `${item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.svg`;
-    await writeFile(path.join(dir, filename), svg, "utf-8");
-
     await db.clothingItem.create({
       data: {
         userId: user.id,
-        imageUrl: `/demo-images/${filename}`,
+        imageUrl: item.imageUrl,
         name: item.name,
         category: item.category,
         subcategory: item.subcategory,
@@ -119,7 +107,7 @@ async function main() {
     });
   }
 
-  console.log(`Seeded ${ITEMS.length} demo wardrobe items.`);
+  console.log(`Seeded ${ITEMS.length} demo wardrobe items (real photos, no generated artwork).`);
   console.log(`Log in with: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
 }
 

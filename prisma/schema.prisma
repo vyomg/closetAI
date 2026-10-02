@@ -69,6 +69,7 @@ model User {
   calendarEntries           OutfitCalendarEntry[]
   trips                     Trip[]
   capsuleWardrobes          CapsuleWardrobe[]
+  productFeedback           ProductFeedback[]
 }
 
 // Photo-derived personal styling profile — see src/lib/prompts/personalAppearanceAnalyzer.ts
@@ -305,6 +306,12 @@ model Outfit {
   overallScore  Int      @default(0)
   adventureLevel Int     @default(3)
   isSaved       Boolean  @default(false)
+  // true only for outfits assembled by hand in the Outfit Playground — never
+  // ran through Gemini/outfitValidator, so styleMatch/occasionMatch/
+  // colorHarmony/overallScore are meaningless and the UI hides them rather
+  // than showing a fabricated or misleading 0%. Every AI-generated outfit
+  // (generate, remix, challenges, trip stylist) defaults to false.
+  isManual      Boolean  @default(false)
   createdAt     DateTime @default(now())
 
   // Optional trip this outfit was generated for (Trip Stylist). Deleting the
@@ -369,6 +376,20 @@ model WearHistory {
   outfitId String
   outfit   Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
   wornAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Submissions from the Connect With Us / Feedback page — bug reports,
+// feature requests and general feedback. Plain product feedback, not to be
+// confused with OutfitFeedback (like/dislike on a specific generated fit).
+model ProductFeedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String // bug | feature | feedback | other
+  message   String
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }

@@ -222,7 +222,7 @@ function ResponseCard({ request, isNew, onClear }: { request: FriendRequest; isN
   const Icon = meta?.icon ?? Heart;
 
   return (
-    <div className="rounded-2xl border border-line bg-white p-5 relative">
+    <div className="rounded-2xl border border-line bg-paper-alt p-5 relative">
       <CardClear onClear={onClear} />
       <p className="text-xs uppercase tracking-wide text-stone mb-1 flex items-center gap-1.5">
         Responded
@@ -247,7 +247,7 @@ function ResponseCard({ request, isNew, onClear }: { request: FriendRequest; isN
 
 function WaitingCard({ request, onClear }: { request: FriendRequest; onClear: () => void }) {
   return (
-    <div className="rounded-2xl border border-dashed border-line bg-white p-5 relative">
+    <div className="rounded-2xl border border-dashed border-line bg-paper-alt p-5 relative">
       <CardClear onClear={onClear} />
       <p className="text-xs uppercase tracking-wide text-stone mb-1">Waiting for response</p>
       <p className="text-sm font-medium mb-4 pr-6">{request.question}</p>

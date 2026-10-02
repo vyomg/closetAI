@@ -7,8 +7,8 @@ export function Badge({
 }: React.HTMLAttributes<HTMLSpanElement> & { tone?: "neutral" | "warning" | "success" }) {
   const toneClasses = {
     neutral: "bg-paper-alt text-ink-soft",
-    warning: "bg-[#f4e6d8] text-warning",
-    success: "bg-[#e3ebe0] text-success",
+    warning: "bg-warning/15 text-warning",
+    success: "bg-success/15 text-success",
   }[tone];
 
   return (

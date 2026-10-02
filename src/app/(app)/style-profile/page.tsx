@@ -10,6 +10,7 @@ import { ImportanceScale } from "@/components/ImportanceScale";
 import { PersonalAppearanceUpload } from "@/components/PersonalAppearanceUpload";
 import { PersonalAppearanceReview } from "@/components/PersonalAppearanceReview";
 import { StyleConstellation } from "@/components/StyleConstellation";
+import { FloatingWords } from "@/components/FloatingWords";
 import { DESIRED_STYLES, OCCASIONS, FIT_OPTIONS, COLOR_PALETTE, SHOE_TYPES } from "@/lib/constants";
 import { BrandLoading } from "@/components/Brand";
 import type { StyleProfileData, LearnedPreferences } from "@/lib/types";
@@ -97,8 +98,9 @@ export default function StyleProfilePage() {
         your outfit feedback automatically.
       </p>
 
-      <div className="rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-10">
-        <p className="font-display text-xl lowercase mb-1">style dna</p>
+      <div className="relative rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-10">
+        <FloatingWords words={["YOU", "DNA", "✦", "TASTE"]} />
+        <p className="font-display text-xl lowercase mb-1 relative">style dna</p>
         <p className="text-sm text-white/50 leading-relaxed mb-2 max-w-sm">{profile.styleDNA.summary}</p>
         <p className="text-[11px] text-white/30 mb-2 lowercase">tap a node for why it&apos;s there</p>
         <div className="text-white">
@@ -106,7 +108,7 @@ export default function StyleProfilePage() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-line bg-white p-5 mb-10">
+      <div className="rounded-2xl border border-line bg-paper-alt p-5 mb-10">
         <p className="font-medium text-sm mb-1">Personal Style Profile</p>
         <p className="text-xs text-stone mb-4">
           A full-body photo lets matchin' understand your proportions and suggest fits/colors that may suit
@@ -125,7 +127,7 @@ export default function StyleProfilePage() {
                   className="object-cover"
                 />
                 {reanalyzing && (
-                  <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-paper/80 flex items-center justify-center">
                     <RefreshCw className="h-4 w-4 animate-spin text-ink-soft" />
                   </div>
                 )}
@@ -279,7 +281,7 @@ export default function StyleProfilePage() {
               <p className="text-sm font-medium mb-2 text-success">Leaning into</p>
               <div className="flex flex-wrap gap-1.5">
                 {topLiked.length ? topLiked.map(([k]) => (
-                  <span key={k} className="rounded-full bg-[#e3ebe0] text-success text-xs px-2.5 py-1">
+                  <span key={k} className="rounded-full bg-success/15 text-success text-xs px-2.5 py-1">
                     {k.replace(":", ": ")}
                   </span>
                 )) : <span className="text-xs text-stone">Nothing yet</span>}
@@ -289,7 +291,7 @@ export default function StyleProfilePage() {
               <p className="text-sm font-medium mb-2 text-warning">Backing away from</p>
               <div className="flex flex-wrap gap-1.5">
                 {topDisliked.length ? topDisliked.map(([k]) => (
-                  <span key={k} className="rounded-full bg-[#f4e6d8] text-warning text-xs px-2.5 py-1">
+                  <span key={k} className="rounded-full bg-warning/15 text-warning text-xs px-2.5 py-1">
                     {k.replace(":", ": ")}
                   </span>
                 )) : <span className="text-xs text-stone">Nothing yet</span>}

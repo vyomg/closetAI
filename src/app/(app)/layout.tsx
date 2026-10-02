@@ -6,7 +6,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await auth();
 
   return (
-    <>
+    <div className="theme-dark-app bg-paper text-ink min-h-screen">
       <div className="lg:flex">
         <Sidebar userName={session?.user?.name ?? ""} userEmail={session?.user?.email ?? ""} />
         <main className="flex-1 min-w-0 mx-auto w-full max-w-6xl px-4 sm:px-6 py-8 sm:py-10 pb-28 lg:mx-0 lg:max-w-[1600px] lg:px-10 xl:px-14 lg:py-10 lg:pb-10">
@@ -14,6 +14,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
       </div>
       <MobileNav />
-    </>
+    </div>
   );
 }

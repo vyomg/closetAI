@@ -134,7 +134,7 @@ export function ShoppingPreferencesPanel({ onSaved }: { onSaved?: () => void }) 
   }
 
   return (
-    <div className="rounded-2xl border border-line bg-white overflow-hidden mb-8">
+    <div className="rounded-2xl border border-line bg-paper-alt overflow-hidden mb-8">
       <div className="w-full flex items-center gap-3 p-5 sm:p-6">
         <button
           onClick={() => setOpen((o) => !o)}
@@ -216,7 +216,7 @@ export function ShoppingPreferencesPanel({ onSaved }: { onSaved?: () => void }) 
             </div>
             <div className="flex items-center gap-2 mb-3">
               <span className="rounded-full bg-paper-alt px-3.5 py-1.5 text-sm">{currencyLabel}</span>
-              {!isAuto && <span className="rounded-full bg-[#f4e6d8] text-warning px-2.5 py-1 text-[11px]">Manual override</span>}
+              {!isAuto && <span className="rounded-full bg-warning/15 text-warning px-2.5 py-1 text-[11px]">Manual override</span>}
             </div>
             {showCurrencyPicker && (
               <div className="flex flex-wrap gap-2 mb-3 animate-fade-in">

@@ -64,7 +64,7 @@ export default function WardrobeStatsPage() {
 
       <section className="mb-12">
         <h2 className="font-display text-2xl mb-4">Outfit activity (last 8 weeks)</h2>
-        <div className="flex items-end gap-2 h-24 rounded-2xl border border-line bg-white p-5">
+        <div className="flex items-end gap-2 h-24 rounded-2xl border border-line bg-paper-alt p-5">
           {stats.weeklyFrequency.map((w) => (
             <div key={w.weekStart} className="flex-1 flex flex-col items-center justify-end h-full gap-1">
               <div
@@ -150,7 +150,7 @@ export default function WardrobeStatsPage() {
 
 function StatCard({ label, value, warn }: { label: string; value: number; warn?: boolean }) {
   return (
-    <div className="rounded-2xl border border-line bg-white p-5">
+    <div className="rounded-2xl border border-line bg-paper-alt p-5">
       <p className={`font-display text-3xl ${warn ? "text-warning" : ""}`}>{value}</p>
       <p className="text-sm text-stone mt-1">{label}</p>
     </div>
