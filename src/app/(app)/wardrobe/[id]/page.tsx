@@ -62,6 +62,7 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
         material: item.material,
         fit: item.fit,
         style: item.style,
+        brand: item.brand,
         formality: item.formality,
         season: item.season,
         sleeveLength: item.sleeveLength,
@@ -279,6 +280,11 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
             <div>
               <Label>Material</Label>
               <Input value={item.material ?? ""} onChange={(e) => set("material", e.target.value)} placeholder="Unknown" />
+            </div>
+
+            <div>
+              <Label>Brand</Label>
+              <Input value={item.brand ?? ""} onChange={(e) => set("brand", e.target.value)} placeholder="Unknown" />
             </div>
 
             <div>

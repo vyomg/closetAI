@@ -11,11 +11,15 @@ import { ArrowRight } from "lucide-react";
 
 const WHEEL_SEGMENTS = ["STREET", "CLEAN", "SMART", "BOLD", "CASUAL", "CHILL", "DATE NIGHT", "SURPRISE ME"];
 
+// Real clothing photographs — the same public/demo-wardrobe assets the
+// authenticated app uses everywhere else, not generated/abstract artwork.
+// Keeps the logged-out landing experience honest about what the product
+// actually looks like once you're in it.
 const DEMO_OUTFIT = [
-  { file: "navy-blazer.svg", label: "Outerwear" },
-  { file: "white-oxford-shirt.svg", label: "Top" },
-  { file: "grey-trousers.svg", label: "Bottom" },
-  { file: "brown-loafers.svg", label: "Shoes" },
+  { file: "black-polo.jpg", label: "Top" },
+  { file: "sage-trousers.jpg", label: "Bottom" },
+  { file: "white-sneakers.jpg", label: "Shoes" },
+  { file: "black-watch.jpg", label: "Accessory" },
 ];
 
 const FEATURES = [
@@ -84,7 +88,7 @@ export default function LandingPage() {
                 <div className="grid grid-cols-4 gap-2.5 mb-4">
                   {DEMO_OUTFIT.map((item) => (
                     <div key={item.file} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-white/10">
-                      <Image src={`/demo-images/${item.file}`} alt={item.label} fill sizes="80px" className="object-cover" />
+                      <Image src={`/demo-wardrobe/${item.file}`} alt={item.label} fill sizes="80px" className="object-cover" />
                     </div>
                   ))}
                 </div>

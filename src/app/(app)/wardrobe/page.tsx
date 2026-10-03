@@ -11,6 +11,8 @@ export default function WardrobePage() {
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
+  const [brand, setBrand] = useState("All");
+  const [season, setSeason] = useState("All");
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -21,19 +23,36 @@ export default function WardrobePage() {
       .then(setItems);
   }, [category, sort]);
 
+  // Brand/season options are only ever the values actually present in this
+  // wardrobe — never a fixed invented list, and the controls hide entirely
+  // when nothing qualifies (e.g. no item has a season set yet).
+  const brandOptions = useMemo(() => {
+    const set = new Set((items ?? []).map((i) => i.brand).filter((b): b is string => !!b));
+    return [...set].sort();
+  }, [items]);
+  const seasonOptions = useMemo(() => {
+    const set = new Set((items ?? []).flatMap((i) => i.season ?? []));
+    return [...set].sort();
+  }, [items]);
+
   const filtered = useMemo(() => {
     if (!items) return [];
-    if (!search.trim()) return items;
-    const q = search.toLowerCase();
-    return items.filter(
-      (i) =>
-        i.name.toLowerCase().includes(q) ||
-        i.primaryColor.toLowerCase().includes(q) ||
-        i.subcategory.toLowerCase().includes(q) ||
-        i.style.toLowerCase().includes(q) ||
-        i.tags.some((t) => t.toLowerCase().includes(q))
-    );
-  }, [items, search]);
+    let result = items;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (i) =>
+          i.name.toLowerCase().includes(q) ||
+          i.primaryColor.toLowerCase().includes(q) ||
+          i.subcategory.toLowerCase().includes(q) ||
+          i.style.toLowerCase().includes(q) ||
+          i.tags.some((t) => t.toLowerCase().includes(q))
+      );
+    }
+    if (brand !== "All") result = result.filter((i) => i.brand === brand);
+    if (season !== "All") result = result.filter((i) => i.season?.includes(season));
+    return result;
+  }, [items, search, brand, season]);
 
   return (
     <div>
@@ -52,6 +71,12 @@ export default function WardrobePage() {
         onSearch={setSearch}
         sort={sort}
         onSort={setSort}
+        brand={brand}
+        onBrand={setBrand}
+        brandOptions={brandOptions}
+        season={season}
+        onSeason={setSeason}
+        seasonOptions={seasonOptions}
       />
 
       {items === null ? (

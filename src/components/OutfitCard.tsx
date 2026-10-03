@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Bookmark, RefreshCw, Trash2, Shirt, Share2, UserPlus, Shuffle } from "lucide-react";
+import { Bookmark, RefreshCw, Trash2, Shirt, Share2, UserPlus, Shuffle, Sparkles, Shapes, Camera } from "lucide-react";
 import { FeedbackButtons } from "@/components/FeedbackButtons";
 import { ShareActions } from "@/components/ShareActions";
 import { cn } from "@/lib/cn";
@@ -55,6 +56,7 @@ export function OutfitCard({
   const [remixOpen, setRemixOpen] = useState(false);
   const [remixing, setRemixing] = useState(false);
   const [remixError, setRemixError] = useState<string | null>(null);
+  const router = useRouter();
 
   async function share() {
     const res = await fetch(`/api/outfits/${outfit.id}/share`, { method: "POST" });
@@ -173,6 +175,25 @@ export function OutfitCard({
                 </button>
               </>
             )}
+            <button
+              onClick={() => router.push(`/chat?aboutOutfit=${outfit.id}`)}
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Ask matchin&apos;
+            </button>
+            <button
+              onClick={() => router.push(`/outfits/playground?seedOutfit=${outfit.id}`)}
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
+            >
+              <Shapes className="h-3.5 w-3.5" /> Playground
+            </button>
+            <button
+              onClick={() => router.push("/try-on")}
+              title="Virtual Try-On (coming soon)"
+              className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs text-ink-soft hover:text-ink hover:bg-paper-alt transition-colors cursor-pointer"
+            >
+              <Camera className="h-3.5 w-3.5" /> Try On
+            </button>
             {onDelete && (
               <button
                 onClick={onDelete}

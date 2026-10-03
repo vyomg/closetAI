@@ -249,6 +249,7 @@ export function OutfitGenerator({
               <Sparkles className="h-4 w-4 mr-1.5" /> Surprise Me
             </Button>
           </div>
+          <p className="text-xs text-stone">Uses 1 credit</p>
 
           {error && <p className="text-sm text-warning">{error}</p>}
         </div>

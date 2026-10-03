@@ -7,6 +7,7 @@ export type ClothingAnalysis = {
   material: string | null;
   fit: string;
   style: string;
+  brand: string | null;
   formality: number; // 1-5
   season: string[];
   sleeveLength: string | null;

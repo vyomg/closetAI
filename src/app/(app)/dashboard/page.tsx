@@ -41,7 +41,7 @@ export default async function DashboardPage() {
   const todaysOutfit = recentOutfits.find((o) => o.createdAt >= startOfToday) ?? null;
 
   const homeData: HomeData = {
-    firstName: user.name.split(" ")[0],
+    firstName: (user.nickname || user.name).split(" ")[0],
     weather,
     tempUnit,
     itemCount,

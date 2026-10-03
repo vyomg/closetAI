@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Home, Shirt, ShoppingBag, Menu, X, Luggage, Layers, UserCircle, Settings, LogOut, Crown, BarChart3, Boxes, Trophy, CalendarDays, MessageSquareHeart, MessageCircle, Shuffle, Heart } from "lucide-react";
+import { Home, Shirt, ShoppingBag, Menu, X, Luggage, Layers, UserCircle, Settings, LogOut, Crown, BarChart3, Boxes, Trophy, CalendarDays, MessageSquareHeart, MessageCircle, Shuffle, Heart, Bell, BookmarkIcon, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Spark } from "@/components/Brand";
 import type { LucideIcon } from "lucide-react";
@@ -23,12 +23,15 @@ const MORE_LINKS: { href: string; label: string; icon: LucideIcon; group?: strin
   { href: "/outfits", label: "Outfits", icon: Layers },
   { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle },
   { href: "/style-profile", label: "Style DNA", icon: UserCircle },
+  { href: "/wishlist", label: "Wishlist", icon: BookmarkIcon, group: "Discover" },
+  { href: "/gallery", label: "Gallery", icon: ImageIcon },
   { href: "/calendar", label: "Calendar", icon: CalendarDays, group: "Plan" },
   { href: "/trips", label: "Trips", icon: Luggage },
   { href: "/ask-a-friend", label: "Ask a Friend", icon: MessageSquareHeart, group: "More" },
   { href: "/outfits/challenges", label: "Challenges", icon: Trophy },
   { href: "/wardrobe/stats", label: "Wardrobe Stats", icon: BarChart3 },
   { href: "/wardrobe/capsule", label: "Capsule Wardrobe", icon: Boxes },
+  { href: "/notifications", label: "Notifications", icon: Bell },
   { href: "/premium", label: "Premium", icon: Crown },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/connect", label: "Connect With Us", icon: Heart },
@@ -45,6 +48,14 @@ function isActivePath(pathname: string, href: string) {
 export function MobileNav() {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/notifications?filter=unread")
+      .then((r) => r.json())
+      .then((d) => setUnreadCount(d.unreadCount ?? 0))
+      .catch(() => {});
+  }, [pathname]);
 
   const moreActive = MORE_LINKS.some((l) => isActivePath(pathname, l.href));
 
@@ -97,10 +108,11 @@ export function MobileNav() {
 
           <button
             onClick={() => setMoreOpen(true)}
-            className="flex flex-col items-center justify-center gap-1 py-2.5 min-h-11 cursor-pointer"
+            className="relative flex flex-col items-center justify-center gap-1 py-2.5 min-h-11 cursor-pointer"
           >
             <Menu className={cn("h-5 w-5", moreActive ? "text-lime" : "text-white/50")} strokeWidth={moreActive ? 2.25 : 1.75} />
             <span className={cn("text-[10px]", moreActive ? "text-white font-medium" : "text-white/50")}>More</span>
+            {unreadCount > 0 && <span className="absolute top-1.5 right-[28%] h-2 w-2 rounded-full bg-lime" />}
           </button>
         </div>
       </nav>

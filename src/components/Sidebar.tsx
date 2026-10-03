@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -21,6 +22,9 @@ import {
   MessageCircle,
   Shuffle,
   Heart,
+  Bell,
+  BookmarkIcon,
+  Image as ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Brand, Spark } from "@/components/Brand";
@@ -46,6 +50,13 @@ const GROUPS: { label: string; links: { href: string; label: string; icon: Lucid
       { href: "/outfits", label: "Outfits", icon: Layers },
       { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle },
       { href: "/style-profile", label: "Style DNA", icon: UserCircle },
+    ],
+  },
+  {
+    label: "Discover",
+    links: [
+      { href: "/wishlist", label: "Wishlist", icon: BookmarkIcon },
+      { href: "/gallery", label: "Gallery", icon: ImageIcon },
     ],
   },
   {
@@ -85,14 +96,39 @@ function isActivePath(pathname: string, href: string) {
 export function Sidebar({ userName, userEmail }: { userName: string; userEmail: string }) {
   const pathname = usePathname();
   const createActive = isActivePath(pathname, "/outfits/create");
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/notifications?filter=unread")
+      .then((r) => r.json())
+      .then((d) => setUnreadCount(d.unreadCount ?? 0))
+      .catch(() => {});
+    fetch("/api/credits")
+      .then((r) => r.json())
+      .then((d) => setCredits(typeof d.balance === "number" ? d.balance : null))
+      .catch(() => {});
+  }, [pathname]);
 
   return (
     <aside className="hidden lg:flex lg:sticky lg:top-0 lg:h-screen lg:shrink-0 w-64 flex-col bg-graphite text-white">
-      <div className="px-6 pt-7 pb-6">
+      <div className="px-6 pt-7 pb-6 flex items-center justify-between">
         <Brand href="/dashboard" size="sm" className="text-white" />
+        <Link
+          href="/notifications"
+          aria-label="Notifications"
+          className="relative shrink-0 rounded-full p-1.5 text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <Bell className="h-4 w-4" strokeWidth={1.75} />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-lime text-lime-ink text-[9px] font-semibold flex items-center justify-center">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Link>
       </div>
 
-      <div className="px-3.5 mb-5">
+      <div className="px-3.5 mb-3">
         <Link
           href="/outfits/create"
           className={cn(
@@ -104,6 +140,20 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
           match something
         </Link>
       </div>
+
+      {credits !== null && (
+        <div className="px-3.5 mb-5">
+          <Link
+            href="/settings"
+            className="flex items-center justify-between rounded-xl bg-white/5 px-3.5 py-2 text-xs text-white/60 hover:bg-white/10 transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              <Spark className="h-3 w-3 text-lime" /> Credits
+            </span>
+            <span className="font-medium text-white">{credits}</span>
+          </Link>
+        </div>
+      )}
 
       <nav className="flex-1 flex flex-col gap-1 px-3.5 overflow-y-auto">
         {GROUPS.map((group) => (

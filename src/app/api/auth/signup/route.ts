@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { WELCOME_CREDIT_GRANT } from "@/lib/credits";
 
 const SignupSchema = z.object({
   name: z.string().min(1).max(100),
@@ -25,6 +26,12 @@ export async function POST(req: Request) {
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   const user = await db.user.create({
     data: { name: parsed.data.name, email, passwordHash },
+  });
+  // User.creditBalance already defaults to WELCOME_CREDIT_GRANT in the
+  // schema — this just records the matching ledger entry so Credits
+  // history isn't a balance with no explanation.
+  await db.creditTransaction.create({
+    data: { userId: user.id, amount: WELCOME_CREDIT_GRANT, reason: "welcome_grant" },
   });
 
   return NextResponse.json({ id: user.id, email: user.email });

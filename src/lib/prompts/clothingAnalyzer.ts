@@ -43,7 +43,7 @@ HOW TO LOOK AT THE IMAGE
 ACCURACY RULES
 ========================
 
-- Only describe what is visually evident. Never invent details you cannot see — most importantly, never guess an exact fabric/material composition, brand, or model that isn't visibly identifiable; if a logo or brand mark is visible describe it neutrally in "tags" (e.g. "visible logo") without naming the brand unless it is unambiguously legible.
+- Only describe what is visually evident. Never invent details you cannot see — most importantly, never guess an exact fabric/material composition, brand, or model that isn't visibly identifiable. If a logo or brand mark is visible AND unambiguously legible, put the exact brand name in "brand" (e.g. "Nike"); otherwise leave "brand" null — never guess a brand from style alone, and never put a brand name in "brand" unless you can actually read it.
 - Separate what you OBSERVE (colour, pattern, visible construction, visible branding) from what you INFER (style character, formality, likely occasions, season suitability). Ground every inference in a specific observed detail — never in the garment's name alone or a single superficial cue.
 - If you cannot confidently determine a field, still provide your best single guess but add that field's key to "uncertainFields" so the app can flag it for the user to confirm. Prefer a conservative, defensible classification over a confident but speculative one.
 - Never infer style purely from one feature (e.g. don't call something "streetwear" merely because it's black, or "formal" merely because it's a button-up). Weigh silhouette, construction, and fit together.
@@ -110,6 +110,7 @@ const RESPONSE_SHAPE = `{
   "material": string | null,
   "fit": "Fitted" | "Regular" | "Oversized",
   "style": string,
+  "brand": string | null,
   "formality": number,
   "season": string[],
   "sleeveLength": string | null,
@@ -137,6 +138,7 @@ const RESPONSE_SCHEMA = {
     material: { type: Type.STRING, nullable: true },
     fit: { type: Type.STRING, enum: ["Fitted", "Regular", "Oversized"] },
     style: { type: Type.STRING },
+    brand: { type: Type.STRING, nullable: true },
     formality: { type: Type.INTEGER, minimum: 1, maximum: 5 },
     season: { type: Type.ARRAY, items: { type: Type.STRING } },
     sleeveLength: { type: Type.STRING, nullable: true },

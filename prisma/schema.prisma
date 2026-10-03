@@ -57,6 +57,30 @@ model User {
   temperatureUnit String @default("AUTO") // AUTO | C | F
   distanceUnit    String @default("AUTO") // AUTO | km | mi
 
+  // What matchin' calls the user — collected in onboarding, distinct from
+  // the account `name`. Falls back to `name` anywhere nickname is unset.
+  nickname String?
+
+  // Lightweight onboarding profile — who/what/why, collected once, used to
+  // bias greetings and Gemini context, never required to use the app.
+  shopFor    String? // Woman | Man | Other
+  ageRange   String?
+  profession String?
+  intent     String? // build-wardrobe | utilize-wardrobe | shop-mindfully
+  heightCm   Int?
+
+  // Named-colour and brand affinity, same simple-JSON-array pattern as
+  // colorsLove/colorsAvoid above rather than a separate relational table.
+  preferredBrands String @default("[]")
+
+  // Explicit hard "never do this" rules the user typed themselves — distinct
+  // from learnedPreferences.dislikedAttributes (inferred from feedback).
+  // Always respected by generation, never overridden by a learned signal.
+  neverPreferences String @default("[]")
+
+  creditBalance   Int    @default(50)
+  themePreference String @default("dark") // system | dark | light
+
   clothingItems      ClothingItem[]
   outfits            Outfit[]
   feedback           OutfitFeedback[]
@@ -70,6 +94,10 @@ model User {
   trips                     Trip[]
   capsuleWardrobes          CapsuleWardrobe[]
   productFeedback           ProductFeedback[]
+  wishlistItems             WishlistItem[]
+  notifications             Notification[]
+  creditTransactions        CreditTransaction[]
+  chatThreads               ChatThread[]
 }
 
 // Photo-derived personal styling profile — see src/lib/prompts/personalAppearanceAnalyzer.ts
@@ -270,6 +298,7 @@ model ClothingItem {
   material        String?
   fit             String  @default("Regular")
   style           String  @default("Casual")
+  brand           String? // identified from the photo where legible; never guessed with false confidence
   formality       Int     @default(2) // 1-5
   season          String  @default("[]") // e.g. ["Spring","Summer"]
   sleeveLength    String?
@@ -337,6 +366,7 @@ model Outfit {
   sharedLinks     SharedOutfit[]
   friendRequests  FriendOutfitRequest[]
   calendarEntries OutfitCalendarEntry[]
+  chatMessages    ChatMessage[]
 
   @@index([userId])
   @@index([tripId])
@@ -392,4 +422,92 @@ model ProductFeedback {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Things the user wants but doesn't own — kept strictly separate from
+// ClothingItem (owned wardrobe). Gemini can reason about "if I bought this,
+// what could I make with my current wardrobe" using this + ClothingItem
+// together, but a WishlistItem is never counted as owned.
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  imageUrl  String?
+  category  String?
+  retailer  String?
+  sourceUrl String?
+  price     Float?
+  currency  String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // outfit_reminder | style_dna_update | wardrobe_insight | credit_warning | system
+  title     String
+  body      String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+// A simple ledger backing User.creditBalance (denormalized running total for
+// fast reads; this table is the auditable history of how it got there).
+model CreditTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int // negative = spend, positive = grant
+  reason    String // e.g. "welcome_grant", "outfit_generate", "chat_message"
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model ChatThread {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String   @default("New chat")
+  mode      String   @default("closet") // closet | hybrid | shopping
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id       String     @id @default(cuid())
+  threadId String
+  thread   ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  role     String // user | assistant
+  content  String
+
+  // Set when this message carries a generated/shown outfit — the outfit row
+  // itself is the single source of truth (same Outfit model every other
+  // surface uses), this just links a chat message to it.
+  outfitId String?
+  outfit   Outfit? @relation(fields: [outfitId], references: [id], onDelete: SetNull)
+
+  // An attachment the user added to their message — either a reference to
+  // an existing wardrobe photo (attachmentImageUrl === that ClothingItem's
+  // imageUrl) or a one-off photo analyzed via the same Gemini vision prompt
+  // wardrobe upload uses, never stored as a second wardrobe item.
+  attachmentImageUrl String?
+  attachmentLabel    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([threadId])
 }

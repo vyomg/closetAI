@@ -1,16 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Loader2, X, Search, ChevronRight, Sparkles, ShoppingBag, UserPlus, Heart } from "lucide-react";
+import {
+  MapPin,
+  Loader2,
+  X,
+  Search,
+  ChevronRight,
+  Sparkles,
+  ShoppingBag,
+  UserPlus,
+  Heart,
+  CalendarDays,
+  CreditCard,
+  Shield,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select } from "@/components/ui/Field";
 import { detectLocation, getLocationPermissionState, roundCoordinate, type LocationFailureReason } from "@/lib/location";
 import { searchCities, type GeocodeCandidate } from "@/lib/weather";
 import { TEMPERATURE_UNIT_OPTIONS, DISTANCE_UNIT_OPTIONS } from "@/lib/constants";
 import { BrandLoading } from "@/components/Brand";
+import { cn } from "@/lib/cn";
 
 type LocationUiState = "initial" | "requesting" | "success" | "error";
+type Theme = "system" | "dark" | "light";
 
 const FAILURE_MESSAGES: Record<LocationFailureReason, string> = {
   unsupported: "Location detection isn't available in this browser.",
@@ -22,8 +39,12 @@ const FAILURE_MESSAGES: Record<LocationFailureReason, string> = {
 };
 
 export default function SettingsPage() {
+  const router = useRouter();
   const [name, setName] = useState("");
+  const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
+  const [creditBalance, setCreditBalance] = useState(0);
+  const [theme, setTheme] = useState<Theme>("dark");
   const [city, setCity] = useState("");
   const [admin1, setAdmin1] = useState("");
   const [country, setCountry] = useState("");
@@ -49,7 +70,10 @@ export default function SettingsPage() {
       .then((r) => r.json())
       .then((data) => {
         setName(data.name);
+        setNickname(data.nickname ?? "");
         setEmail(data.email);
+        setCreditBalance(data.creditBalance ?? 0);
+        setTheme(data.themePreference ?? "dark");
         setCity(data.city ?? "");
         setAdmin1(data.admin1 ?? "");
         setCountry(data.country ?? "");
@@ -91,6 +115,7 @@ export default function SettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
+        nickname: nickname || null,
         city: city || null,
         admin1: admin1 || null,
         country: country || null,
@@ -108,14 +133,20 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   }
 
+  async function changeTheme(next: Theme) {
+    setTheme(next);
+    await fetch("/api/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ themePreference: next }),
+    });
+    router.refresh();
+  }
+
   async function useMyLocation() {
     setLocationState("requesting");
     setLocationErrorMessage(null);
 
-    // Check the Permissions API first (when supported) purely to give an
-    // immediate, specific message if the browser already has this site
-    // blocked — this never itself triggers the native prompt, only
-    // getCurrentPosition() below does that.
     const permissionState = await getLocationPermissionState();
     if (permissionState === "denied") {
       setLocationState("error");
@@ -198,23 +229,54 @@ export default function SettingsPage() {
   return (
     <div className="max-w-md">
       <h1 className="font-display text-4xl mb-2">Settings</h1>
-      <p className="text-stone mb-10">Manage your account, location, and units.</p>
+      <p className="text-stone mb-10">Manage your account, preferences, and the app.</p>
 
       <div className="space-y-8">
+        {/* Account */}
         <div>
-          <p className="text-xs uppercase tracking-wide text-stone mb-3">Profile</p>
+          <p className="text-xs uppercase tracking-wide text-stone mb-3">Account</p>
           <div className="space-y-6">
             <div>
               <Label>Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
+              <Label>Nickname</Label>
+              <Input value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="What should matchin' call you?" />
+            </div>
+            <div>
               <Label>Email</Label>
               <Input value={email} disabled className="opacity-60" />
+            </div>
+            <div className="flex items-center justify-between rounded-xl bg-paper-alt px-3.5 py-2.5">
+              <span className="flex items-center gap-2 text-sm">
+                <CreditCard className="h-4 w-4 text-ink-soft" /> Credits
+              </span>
+              <span className="text-sm font-medium">{creditBalance}</span>
             </div>
           </div>
         </div>
 
+        {/* Appearance */}
+        <div className="rounded-2xl border border-line p-5">
+          <p className="text-xs uppercase tracking-wide text-stone mb-3">Appearance</p>
+          <div className="grid grid-cols-3 gap-2">
+            {(["system", "dark", "light"] as Theme[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => changeTheme(t)}
+                className={cn(
+                  "rounded-xl border px-3 py-2.5 text-sm capitalize transition-colors cursor-pointer",
+                  theme === t ? "border-ink bg-ink text-paper" : "border-line text-ink-soft hover:border-ink/40"
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* App: Location & Units */}
         <div className="rounded-2xl border border-line p-5">
           <p className="text-xs uppercase tracking-wide text-stone mb-3">Location &amp; Weather</p>
           <Label>Location</Label>
@@ -327,13 +389,34 @@ export default function SettingsPage() {
           {saved && <span className="text-sm text-success">Saved</span>}
         </div>
 
+        {/* Calendar */}
         <div>
-          <p className="text-xs uppercase tracking-wide text-stone mb-3">More</p>
+          <p className="text-xs uppercase tracking-wide text-stone mb-3">Calendar</p>
+          <div className="rounded-2xl border border-line bg-paper-alt px-5 py-4 flex items-center justify-between">
+            <span className="flex items-center gap-3 text-sm">
+              <CalendarDays className="h-4 w-4 text-ink-soft" /> Google Calendar
+            </span>
+            <span className="text-xs text-stone">Not connected</span>
+          </div>
+        </div>
+
+        {/* Preferences / More */}
+        <div>
+          <p className="text-xs uppercase tracking-wide text-stone mb-3">Preferences</p>
           <div className="rounded-2xl border border-line bg-paper-alt divide-y divide-line overflow-hidden">
-            <SettingsLink href="/style-profile" icon={<Sparkles className="h-4 w-4" />} label="Style Profile" />
+            <SettingsLink href="/style-profile" icon={<Sparkles className="h-4 w-4" />} label="Style DNA & Preferences" />
             <SettingsLink href="/buy" icon={<ShoppingBag className="h-4 w-4" />} label="Shopping Preferences" />
             <SettingsLink href="/ask-a-friend" icon={<UserPlus className="h-4 w-4" />} label="Ask a Friend" />
-            <SettingsLink href="/connect" icon={<Heart className="h-4 w-4" />} label="Connect With Us" />
+          </div>
+        </div>
+
+        {/* Support */}
+        <div>
+          <p className="text-xs uppercase tracking-wide text-stone mb-3">Support</p>
+          <div className="rounded-2xl border border-line bg-paper-alt divide-y divide-line overflow-hidden">
+            <SettingsLink href="/connect" icon={<Heart className="h-4 w-4" />} label="Feedback & Support" />
+            <SettingsLink href="/legal/privacy" icon={<Shield className="h-4 w-4" />} label="Privacy Policy" />
+            <SettingsLink href="/legal/terms" icon={<FileText className="h-4 w-4" />} label="Terms" />
           </div>
         </div>
       </div>

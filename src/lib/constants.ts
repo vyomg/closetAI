@@ -243,6 +243,135 @@ export const OUTFIT_CHALLENGES = [
 
 export type OutfitChallengeKey = (typeof OUTFIT_CHALLENGES)[number]["key"];
 
+// Named colour palette for the colour-preference picker (onboarding + Style
+// Preferences) — nicer names than raw hex so the UI reads premium, each
+// backed by a real swatch value. `label` is what's stored/compared against
+// colorsLove/colorsAvoid (kept short, matches the plainer COLOR_PALETTE
+// names above where they overlap) — `name` is the display-only flourish.
+export const NAMED_COLORS = [
+  { label: "Black", name: "Midnight Black", hex: "#17160f" },
+  { label: "White", name: "Cloud White", hex: "#f5f4ef" },
+  { label: "Grey", name: "Stone Grey", hex: "#9b968a" },
+  { label: "Navy", name: "Navy", hex: "#1f2a44" },
+  { label: "Blue", name: "Cobalt Blue", hex: "#3b5c8c" },
+  { label: "Beige", name: "Sand", hex: "#d9c9a8" },
+  { label: "Brown", name: "Walnut Brown", hex: "#6b4a30" },
+  { label: "Tan", name: "Tan", hex: "#c9a877" },
+  { label: "Olive", name: "Forest Olive", hex: "#5f6b3f" },
+  { label: "Green", name: "Emerald", hex: "#3d5c3a" },
+  { label: "Red", name: "Crimson", hex: "#8c2f2f" },
+  { label: "Burgundy", name: "Burgundy", hex: "#5c2530" },
+  { label: "Pink", name: "Blush Pink", hex: "#d19aa6" },
+  { label: "Purple", name: "Lilac", hex: "#9a8bc2" },
+  { label: "Yellow", name: "Mustard", hex: "#d1b13d" },
+  { label: "Orange", name: "Coral", hex: "#c07a3a" },
+  { label: "Cream", name: "Cream", hex: "#efe6d3" },
+  { label: "Neutral", name: "Taupe", hex: "#c8c2b4" },
+  { label: "Mint", name: "Mint", hex: "#9ecdb8" },
+  { label: "Electric Lime", name: "Electric Lime", hex: "#d7ff3f" },
+] as const;
+
+// Real, recognizable clothing/footwear brands, grouped the way the brand
+// picker presents them. Text-based tiles only — no fabricated logos. Users
+// pick what they actually wear; nothing here claims any partnership.
+export const BRAND_CATALOG: Record<string, string[]> = {
+  Streetwear: ["Nike", "Adidas", "Supreme", "Stussy", "Carhartt WIP", "Palace", "Champion"],
+  Sportswear: ["Nike", "Adidas", "Puma", "Under Armour", "New Balance", "Decathlon", "ASICS"],
+  Denim: ["Levi's", "Wrangler", "Lee", "Diesel", "True Religion", "Pepe Jeans"],
+  Formal: ["Allen Solly", "Arrow", "Van Heusen", "Blackberrys", "Louis Philippe", "Hugo Boss"],
+  Luxury: ["Calvin Klein", "Ralph Lauren", "Tommy Hilfiger", "Armani Exchange", "Michael Kors", "Lacoste"],
+  Outdoor: ["The North Face", "Columbia", "Patagonia", "Timberland", "Woodland"],
+  Footwear: ["Converse", "Vans", "Crocs", "Skechers", "Clarks", "Bata", "Red Tape", "Steve Madden"],
+  Accessories: ["Fossil", "Titan", "Casio", "Ray-Ban"],
+};
+
+// "Why are you here" intents — onboarding step, stored as User.intent.
+export const ONBOARDING_INTENTS = [
+  { key: "build-wardrobe", title: "Build a new wardrobe", description: "I'm starting fresh and want curated outfit suggestions." },
+  { key: "utilize-wardrobe", title: "Use what I already own", description: "Help me create new looks from my existing closet." },
+  { key: "shop-mindfully", title: "Shop more mindfully", description: "Discover pieces that actually match my style and needs." },
+] as const;
+
+export const SHOP_FOR_OPTIONS = ["Woman", "Man", "Other"] as const;
+
+// Occasion-specific "Style Play" contexts — distinct from the free-text
+// OCCASIONS list used at generation time; this is the smaller, curated set
+// Style DNA's "Teach matchin'" A/B questions are grouped under.
+export const STYLE_PLAY_CONTEXTS = ["Everyday", "Office", "Going Out", "Festive", "Travel"] as const;
+
+// "Teach matchin'" A/B cards, grouped by Style Play context. Each option's
+// `key` matches the exact attribute-key shape lib/prompts/styleLearner.ts
+// already writes (e.g. "fit:Oversized", "formality:casual") so an answer
+// here moves the same Style DNA axes real outfit feedback does — not a
+// second preference model. Text-only cards, deliberately: these test
+// abstract attributes (fit, formality) that don't correspond to one real
+// photographed garment, so a text card is honest where a fake "photo" of a
+// generic silhouette would not be.
+export const STYLE_PLAY_QUESTIONS: Record<
+  (typeof STYLE_PLAY_CONTEXTS)[number],
+  { prompt: string; a: { label: string; sub: string; key: string }; b: { label: string; sub: string; key: string } }[]
+> = {
+  Everyday: [
+    {
+      prompt: "Which feels more like you for everyday?",
+      a: { label: "Close fit", sub: "A defined line that follows the body", key: "fit:Fitted" },
+      b: { label: "Relaxed fit", sub: "Room to move, nothing clingy", key: "fit:Oversized" },
+    },
+    {
+      prompt: "Default everyday palette?",
+      a: { label: "Neutral", sub: "Black, white, grey, navy", key: "color:Black" },
+      b: { label: "Colourful", sub: "Not afraid of a bold hue", key: "style:Trendy" },
+    },
+  ],
+  Office: [
+    {
+      prompt: "At the office, you lean...",
+      a: { label: "Polished", sub: "Structured, put-together", key: "formality:formal" },
+      b: { label: "Smart casual", sub: "Comfortable but still sharp", key: "formality:smart-casual" },
+    },
+  ],
+  "Going Out": [
+    {
+      prompt: "Going out, your fit is...",
+      a: { label: "Streetwear", sub: "Bold, graphic, layered", key: "style:Streetwear" },
+      b: { label: "Classic", sub: "Clean lines, timeless", key: "style:Classic" },
+    },
+  ],
+  Festive: [
+    {
+      prompt: "For festive occasions...",
+      a: { label: "Statement piece", sub: "One bold item carries the look", key: "style:Trendy" },
+      b: { label: "Understated", sub: "Quality over flash", key: "style:Minimal" },
+    },
+  ],
+  Travel: [
+    {
+      prompt: "Packing for a trip, you prioritize...",
+      a: { label: "Comfort first", sub: "Soft, relaxed, easy to move in", key: "fit:Oversized" },
+      b: { label: "Still put-together", sub: "Comfortable but considered", key: "fit:Regular" },
+    },
+  ],
+};
+
+// Onboarding's "right if you'd wear it, left if you wouldn't" style-swipe
+// deck — the same real clothing photographs in public/demo-wardrobe/ (not
+// stock photography, not generated artwork), each tagged with its real
+// attributes so a swipe answer feeds the exact same learnedPreferences
+// engine real outfit feedback does (see prisma/seed.ts for where these
+// same photos + attributes are also used to seed the demo wardrobe).
+export const ONBOARDING_SWIPE_DECK = [
+  { imageUrl: "/demo-wardrobe/black-polo.jpg", label: "Smart Casual", style: "Smart Casual", fit: "Regular", primaryColor: "Black", formality: 3, category: "Tops" },
+  { imageUrl: "/demo-wardrobe/orange-graphic-tee.jpg", label: "Streetwear", style: "Streetwear", fit: "Oversized", primaryColor: "Orange", formality: 1, category: "Tops" },
+  { imageUrl: "/demo-wardrobe/pink-shirt.jpg", label: "Classic", style: "Classic", fit: "Regular", primaryColor: "Pink", formality: 3, category: "Tops" },
+  { imageUrl: "/demo-wardrobe/green-tshirt.jpg", label: "Minimal", style: "Minimal", fit: "Regular", primaryColor: "Green", formality: 1, category: "Tops" },
+  { imageUrl: "/demo-wardrobe/sage-trousers.jpg", label: "Relaxed", style: "Relaxed", fit: "Regular", primaryColor: "Sage Green", formality: 2, category: "Bottoms" },
+  { imageUrl: "/demo-wardrobe/black-jeans.jpg", label: "Classic", style: "Classic", fit: "Regular", primaryColor: "Black", formality: 2, category: "Bottoms" },
+  { imageUrl: "/demo-wardrobe/white-sneakers.jpg", label: "Athletic", style: "Sporty", fit: "Regular", primaryColor: "White", formality: 1, category: "Shoes" },
+  { imageUrl: "/demo-wardrobe/black-sneakers.jpg", label: "Casual", style: "Casual", fit: "Regular", primaryColor: "Black", formality: 1, category: "Shoes" },
+  { imageUrl: "/demo-wardrobe/navy-cap.jpg", label: "Casual", style: "Casual", fit: "Regular", primaryColor: "Navy", formality: 1, category: "Accessories" },
+  { imageUrl: "/demo-wardrobe/black-watch.jpg", label: "Minimal", style: "Minimal", fit: "Regular", primaryColor: "Black", formality: 3, category: "Accessories" },
+] as const;
+
 export const IMPORTANCE_FIELDS = [
   { key: "comfortImportance", label: "How important is comfort?" },
   { key: "fashionImportance", label: "How important is looking fashionable?" },

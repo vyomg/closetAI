@@ -105,6 +105,7 @@ export async function POST(req: Request) {
         material: null,
         fit: "Regular",
         style: "Casual",
+        brand: null,
         formality: 2,
         season: "[]",
         sleeveLength: null,

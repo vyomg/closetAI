@@ -16,6 +16,12 @@ export function FilterSheet({
   onSort,
   hasActiveFilters,
   onClearAll,
+  brand,
+  onBrand,
+  brandOptions,
+  season,
+  onSeason,
+  seasonOptions,
 }: {
   open: boolean;
   onClose: () => void;
@@ -25,6 +31,12 @@ export function FilterSheet({
   onSort: (v: SortOption) => void;
   hasActiveFilters: boolean;
   onClearAll: () => void;
+  brand: string;
+  onBrand: (v: string) => void;
+  brandOptions: string[];
+  season: string;
+  onSeason: (v: string) => void;
+  seasonOptions: string[];
 }) {
   if (!open) return null;
 
@@ -57,6 +69,46 @@ export function FilterSheet({
             </button>
           ))}
         </div>
+
+        {brandOptions.length > 0 && (
+          <>
+            <p className="text-xs uppercase tracking-wide text-stone mb-2.5">Brand</p>
+            <div className="flex flex-wrap gap-1.5 mb-6">
+              {["All", ...brandOptions].map((b) => (
+                <button
+                  key={b}
+                  onClick={() => onBrand(b)}
+                  className={cn(
+                    "rounded-full px-3.5 py-2 text-sm transition-colors cursor-pointer min-h-11",
+                    brand === b ? "bg-ink text-paper" : "bg-paper-alt text-ink-soft"
+                  )}
+                >
+                  {b}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        {seasonOptions.length > 0 && (
+          <>
+            <p className="text-xs uppercase tracking-wide text-stone mb-2.5">Season</p>
+            <div className="flex flex-wrap gap-1.5 mb-6">
+              {["All", ...seasonOptions].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => onSeason(s)}
+                  className={cn(
+                    "rounded-full px-3.5 py-2 text-sm transition-colors cursor-pointer min-h-11",
+                    season === s ? "bg-ink text-paper" : "bg-paper-alt text-ink-soft"
+                  )}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
         <p className="text-xs uppercase tracking-wide text-stone mb-2.5">Sort by</p>
         <div className="flex flex-col gap-1.5 mb-6">

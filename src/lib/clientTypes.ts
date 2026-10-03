@@ -12,6 +12,7 @@ export type ClothingItemDTO = {
   material: string | null;
   fit: string;
   style: string;
+  brand: string | null;
   formality: number;
   season: string[];
   sleeveLength: string | null;
