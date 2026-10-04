@@ -59,6 +59,12 @@ export function MobileNav() {
 
   const moreActive = MORE_LINKS.some((l) => isActivePath(pathname, l.href));
 
+  // Chat Now is a full-screen workspace (its own header, its own way back)
+  // that deliberately covers this bar's screen real estate on mobile — see
+  // app/(app)/chat/page.tsx. Showing both at once would double up on
+  // navigation and let this bar's taps land underneath the chat composer.
+  if (pathname === "/chat") return null;
+
   return (
     <>
       <nav

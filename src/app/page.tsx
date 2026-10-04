@@ -8,19 +8,9 @@ import { Brand, Spark } from "@/components/Brand";
 import { StoreBadges } from "@/components/StoreBadges";
 import { MatchinWheel } from "@/components/MatchinWheel";
 import { ArrowRight } from "lucide-react";
+import { LANDING_WHEEL_OUTFIT } from "@/lib/publicFashion";
 
 const WHEEL_SEGMENTS = ["STREET", "CLEAN", "SMART", "BOLD", "CASUAL", "CHILL", "DATE NIGHT", "SURPRISE ME"];
-
-// Real clothing photographs — the same public/demo-wardrobe assets the
-// authenticated app uses everywhere else, not generated/abstract artwork.
-// Keeps the logged-out landing experience honest about what the product
-// actually looks like once you're in it.
-const DEMO_OUTFIT = [
-  { file: "black-polo.jpg", label: "Top" },
-  { file: "sage-trousers.jpg", label: "Bottom" },
-  { file: "white-sneakers.jpg", label: "Shoes" },
-  { file: "black-watch.jpg", label: "Accessory" },
-];
 
 const FEATURES = [
   { label: "Digital Wardrobe", body: "Photograph what you own once. Every piece becomes a clean entry in your closet — for good." },
@@ -86,9 +76,9 @@ export default function LandingPage() {
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 max-w-sm mx-auto text-left">
                 <div className="grid grid-cols-4 gap-2.5 mb-4">
-                  {DEMO_OUTFIT.map((item) => (
-                    <div key={item.file} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-white/10">
-                      <Image src={`/demo-wardrobe/${item.file}`} alt={item.label} fill sizes="80px" className="object-cover" />
+                  {LANDING_WHEEL_OUTFIT.map((item) => (
+                    <div key={item.imageUrl} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-white/10">
+                      <Image src={item.imageUrl} alt={item.label} fill sizes="80px" className="object-cover" />
                     </div>
                   ))}
                 </div>

@@ -22,6 +22,25 @@ export function Spark({ className }: { className?: string }) {
 // that reference "the mark" don't need to know it's a spark under the hood.
 export const BrandMark = Spark;
 
+// matchin's mascot — the same spark mark, given two small eyes so it reads
+// as a tiny character rather than a pure glyph. Deliberately restrained
+// (no mouth, no limbs, no color beyond the spark's own fill) so it stays a
+// premium UI accent, not a cartoon — used only where the product is
+// introducing or "speaking as" itself (onboarding welcome/review, the Chat
+// assistant's message marker), never as general decoration.
+export function MatchinAvatar({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
+      <path
+        d="M15 0 Q17.5 13.5 30 15.5 Q18 17.5 16 30 Q14 17.5 2 16 Q14 13.5 15 0 Z"
+        fill="currentColor"
+      />
+      <circle cx="12.6" cy="15.1" r="1.5" fill="var(--graphite)" />
+      <circle cx="19.6" cy="15.1" r="1.5" fill="var(--graphite)" />
+    </svg>
+  );
+}
+
 // The wordmark is always lowercase with the apostrophe — "matchin'" — per
 // brand: this is the one correct spelling everywhere, including at the
 // start of a sentence. Uppercase ("MATCHIN'") is reserved for tiny

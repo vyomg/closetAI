@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { ThumbsDown, ThumbsUp, Sparkles, Shuffle, ShoppingBag, SportShoe } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
@@ -11,8 +11,10 @@ import { ImportanceScale } from "@/components/ImportanceScale";
 import { PersonalAppearanceUpload } from "@/components/PersonalAppearanceUpload";
 import { PersonalAppearanceReview } from "@/components/PersonalAppearanceReview";
 import { BrandPicker } from "@/components/BrandPicker";
-import { Spark } from "@/components/Brand";
+import { Spark, MatchinAvatar } from "@/components/Brand";
 import { FloatingWords } from "@/components/FloatingWords";
+import { HeightUnitInput, type HeightUnit } from "@/components/HeightUnitInput";
+import { LoaferIcon, BootIcon, FormalShoeIcon, SandalIcon } from "@/components/icons/FootwearIcons";
 import { cn } from "@/lib/cn";
 import {
   DESIRED_STYLES,
@@ -22,9 +24,46 @@ import {
   NAMED_COLORS,
   ONBOARDING_INTENTS,
   SHOP_FOR_OPTIONS,
-  ONBOARDING_SWIPE_DECK,
 } from "@/lib/constants";
+import { styleLearningDeckFor } from "@/lib/publicFashion";
 import type { PersonalAppearanceProfileDTO } from "@/lib/clientTypes";
+
+const INTENT_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+  "build-wardrobe": Sparkles,
+  "utilize-wardrobe": Shuffle,
+  "shop-mindfully": ShoppingBag,
+};
+
+const FOOTWEAR_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+  Sneakers: SportShoe,
+  Loafers: LoaferIcon,
+  Boots: BootIcon,
+  "Formal shoes": FormalShoeIcon,
+  Sandals: SandalIcon,
+};
+
+// Floating decorative word-set per step — the same restrained treatment
+// (position, size, opacity, animation) as the welcome/review screens,
+// applied to every step rather than just the first one. A QA pass flagged
+// a one-off "greedy" accent on a single screen as inconsistent — this bank
+// is the fix: one word-list per step, always rendered through the same
+// <FloatingWords> component.
+const STEP_WORDS: Record<string, string[]> = {
+  nickname: ["HEY", "YOU", "✦", "NICE"],
+  shopFor: ["FIT", "SCOPE", "✦", "YOU"],
+  intent: ["WHY", "HERE", "✦", "GOAL"],
+  vibe: ["VIBE", "MOOD", "✦", "YOU"],
+  usualClothing: ["DAILY", "WEAR", "✦", "YOU"],
+  occasions: ["WHEN", "WHERE", "✦", "GO"],
+  fitHeight: ["FIT", "TRUE", "✦", "YOU"],
+  colors: ["HUE", "TONE", "✦", "LOVE"],
+  footwear: ["STEP", "WALK", "✦", "SOLE"],
+  brands: ["LABEL", "LOVE", "✦", "PICK"],
+  swipe: ["SWIPE", "YES", "NO", "✦"],
+  adventurousness: ["BOLD", "SAFE", "✦", "PUSH"],
+  importance: ["WHAT", "MATTERS", "✦", "YOU"],
+  photo: ["SHAPE", "YOU", "✦", "TRUE"],
+};
 
 type StyleReaction = { style: string; fit: string; primaryColor: string; formality: number; category: string; reaction: "like" | "dislike" };
 
@@ -35,6 +74,7 @@ type Data = {
   profession: string;
   intent: string;
   heightCm: string;
+  heightUnit: HeightUnit;
   preferredStyles: string[];
   usualClothing: string;
   occasions: string[];
@@ -57,6 +97,7 @@ const INITIAL: Data = {
   profession: "",
   intent: "",
   heightCm: "",
+  heightUnit: "cm",
   preferredStyles: [],
   usualClothing: "",
   occasions: [],
@@ -104,6 +145,13 @@ export default function OnboardingPage() {
   const step = STEPS[stepIndex];
   const totalSteps = STEPS.length;
 
+  // Real people wearing real outfits, sourced from the web — never the
+  // user's own wardrobe (see lib/publicFashion.ts). Filtered by whichever
+  // gender the "how do you want me to shop for you?" step already
+  // established, so the deck matches what the user is actually shopping
+  // for; computed once per shopFor answer so it doesn't reshuffle mid-swipe.
+  const swipeDeck = useMemo(() => styleLearningDeckFor(data.shopFor), [data.shopFor]);
+
   function set<K extends keyof Data>(key: K, value: Data[K]) {
     setData((d) => ({ ...d, [key]: value }));
   }
@@ -116,12 +164,12 @@ export default function OnboardingPage() {
   }
 
   function swipe(reaction: "like" | "dislike") {
-    const card = ONBOARDING_SWIPE_DECK[swipeIndex];
+    const card = swipeDeck[swipeIndex];
     set("styleReactions", [
       ...data.styleReactions,
       { style: card.style, fit: card.fit, primaryColor: card.primaryColor, formality: card.formality, category: card.category, reaction },
     ]);
-    if (swipeIndex < ONBOARDING_SWIPE_DECK.length - 1) {
+    if (swipeIndex < swipeDeck.length - 1) {
       setSwipeIndex((i) => i + 1);
     } else {
       goNext();
@@ -130,11 +178,14 @@ export default function OnboardingPage() {
 
   async function finish() {
     setSubmitting(true);
+    // heightUnit is a client-only display preference — the server only
+    // ever receives the canonical heightCm value, never a unit.
     await fetch("/api/onboarding", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         ...data,
+        heightUnit: undefined,
         heightCm: data.heightCm ? Number(data.heightCm) : undefined,
       }),
     });
@@ -165,18 +216,35 @@ export default function OnboardingPage() {
   const hideGenericNav = step === "swipe" || step === "review" || step === "photo";
 
   return (
-    <div className="theme-dark-app bg-paper text-ink flex-1 flex items-start sm:items-center justify-center px-6 py-14">
-      <div className="w-full max-w-xl animate-fade-up">
+    <div
+      className={cn(
+        "theme-dark-app bg-paper text-ink flex-1 flex items-start sm:items-center justify-center px-6 py-14 relative overflow-hidden",
+        "bg-[radial-gradient(ellipse_70%_50%_at_8%_-8%,rgba(215,255,63,0.10),transparent_60%),radial-gradient(ellipse_60%_45%_at_96%_108%,rgba(61,92,140,0.16),transparent_62%)]"
+      )}
+    >
+      <div className="w-full max-w-xl animate-fade-up relative">
         <div className="flex items-center gap-2 mb-10">
           {STEPS.map((_, i) => (
             <div key={i} className={`h-1 flex-1 rounded-full transition-colors ${i <= stepIndex ? "bg-lime" : "bg-line"}`} />
           ))}
         </div>
 
+        {/* One consistent floating-word treatment for every step that uses
+            the generic <Step> wrapper — welcome/review/swipe render their
+            own since they don't use that wrapper. Fixes a QA finding where
+            a one-off decorative word appeared on a single onboarding screen
+            and nowhere else: this applies the same word-bank, position and
+            animation to the whole flow instead of one page. The wrapper
+            spans the full step body (not just the title) so the words have
+            real space to float in, matching how welcome/review position
+            theirs against their own content height. */}
+        <div className="relative">
+          {STEP_WORDS[step] && <FloatingWords words={STEP_WORDS[step]} />}
+
         {step === "welcome" && (
           <div className="relative animate-fade-in text-center py-6">
             <FloatingWords words={["MATCH", "FIT", "YOU", "✦"]} />
-            <Spark className="h-8 w-8 text-lime mx-auto mb-6" />
+            <MatchinAvatar className="h-10 w-10 text-lime mx-auto mb-6" />
             <h1 className="font-display text-3xl mb-3 leading-tight lowercase relative">hi, i&apos;m matchin&apos;.</h1>
             <p className="text-sm text-stone mb-8 max-w-sm mx-auto relative">
               Think of me as your most honest, stylish friend — the one who actually knows your closet. A few quick things
@@ -235,19 +303,33 @@ export default function OnboardingPage() {
         {step === "intent" && (
           <Step title="so, why are you here?" subtitle="Pick what matters most right now.">
             <div className="space-y-3">
-              {ONBOARDING_INTENTS.map((o) => (
-                <button
-                  key={o.key}
-                  onClick={() => set("intent", o.key)}
-                  className={cn(
-                    "w-full text-left rounded-2xl border-2 p-4 transition-colors cursor-pointer",
-                    data.intent === o.key ? "border-lime bg-lime/10" : "border-line hover:border-ink/30"
-                  )}
-                >
-                  <p className="font-medium text-sm mb-0.5">{o.title}</p>
-                  <p className="text-xs text-stone">{o.description}</p>
-                </button>
-              ))}
+              {ONBOARDING_INTENTS.map((o) => {
+                const Icon = INTENT_ICON[o.key] ?? Sparkles;
+                const active = data.intent === o.key;
+                return (
+                  <button
+                    key={o.key}
+                    onClick={() => set("intent", o.key)}
+                    className={cn(
+                      "w-full flex items-start gap-3.5 text-left rounded-2xl border-2 p-4 transition-colors cursor-pointer",
+                      active ? "border-lime bg-lime/10" : "border-line hover:border-ink/30"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "shrink-0 h-9 w-9 rounded-full flex items-center justify-center transition-colors",
+                        active ? "bg-lime text-lime-ink" : "bg-paper-alt text-ink-soft"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span>
+                      <p className="font-medium text-sm mb-0.5">{o.title}</p>
+                      <p className="text-xs text-stone">{o.description}</p>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </Step>
         )}
@@ -283,15 +365,12 @@ export default function OnboardingPage() {
             </div>
             <div>
               <p className="text-sm font-medium mb-2.5">Height (optional)</p>
-              <div className="flex items-center gap-2 max-w-[160px]">
-                <Input
-                  type="number"
-                  value={data.heightCm}
-                  onChange={(e) => set("heightCm", e.target.value)}
-                  placeholder="170"
-                />
-                <span className="text-sm text-stone shrink-0">cm</span>
-              </div>
+              <HeightUnitInput
+                valueCm={data.heightCm}
+                onChangeCm={(cm) => set("heightCm", cm)}
+                unit={data.heightUnit}
+                onUnitChange={(u) => set("heightUnit", u)}
+              />
             </div>
           </Step>
         )}
@@ -357,7 +436,30 @@ export default function OnboardingPage() {
 
         {step === "footwear" && (
           <Step title="what footwear do you gravitate to?" subtitle="Sneakers, loafers, boots — pick your regulars.">
-            <StyleSelector options={SHOE_TYPES} selected={data.shoePreference} onChange={(v) => set("shoePreference", v)} />
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {SHOE_TYPES.map((shoe) => {
+                const Icon = FOOTWEAR_ICON[shoe] ?? SportShoe;
+                const active = data.shoePreference.includes(shoe);
+                return (
+                  <button
+                    key={shoe}
+                    onClick={() =>
+                      set(
+                        "shoePreference",
+                        active ? data.shoePreference.filter((s) => s !== shoe) : [...data.shoePreference, shoe]
+                      )
+                    }
+                    className={cn(
+                      "flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-3 transition-colors cursor-pointer",
+                      active ? "border-lime bg-lime/10" : "border-line hover:border-ink/30"
+                    )}
+                  >
+                    <Icon className={cn("h-6 w-6", active ? "text-lime" : "text-ink-soft")} />
+                    <span className="text-sm font-medium">{shoe}</span>
+                  </button>
+                );
+              })}
+            </div>
           </Step>
         )}
 
@@ -370,19 +472,19 @@ export default function OnboardingPage() {
         {step === "swipe" && (
           <div className="animate-fade-in">
             <h1 className="font-display text-3xl mb-2 leading-tight lowercase">right if you&apos;d wear it.</h1>
-            <p className="text-sm text-stone mb-8">Left if you wouldn&apos;t. {ONBOARDING_SWIPE_DECK.length - swipeIndex} left.</p>
+            <p className="text-sm text-stone mb-8">Left if you wouldn&apos;t. {swipeDeck.length - swipeIndex} left.</p>
             <div className="relative mx-auto max-w-xs">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-line bg-paper-alt">
                 <Image
-                  key={ONBOARDING_SWIPE_DECK[swipeIndex].imageUrl}
-                  src={ONBOARDING_SWIPE_DECK[swipeIndex].imageUrl}
-                  alt={ONBOARDING_SWIPE_DECK[swipeIndex].label}
+                  key={swipeDeck[swipeIndex].imageUrl}
+                  src={swipeDeck[swipeIndex].imageUrl}
+                  alt={swipeDeck[swipeIndex].label}
                   fill
                   sizes="320px"
                   className="object-cover animate-fade-in"
                 />
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-ink/70 to-transparent p-4">
-                  <p className="text-white text-sm font-medium">{ONBOARDING_SWIPE_DECK[swipeIndex].label}</p>
+                  <p className="text-white text-sm font-medium">{swipeDeck[swipeIndex].label}</p>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-5 mt-6">
@@ -448,7 +550,7 @@ export default function OnboardingPage() {
         {step === "review" && (
           <div className="relative animate-fade-in text-center py-6">
             <FloatingWords words={["READY", "YOU", "✦", "GO"]} />
-            <Spark className="h-8 w-8 text-lime mx-auto mb-6" />
+            <MatchinAvatar className="h-10 w-10 text-lime mx-auto mb-6" />
             <h1 className="font-display text-3xl mb-3 leading-tight lowercase relative">
               {appearanceProfile ? "your personal style profile" : "that's it" }{data.nickname ? `, ${data.nickname}.` : "."}
             </h1>
@@ -491,6 +593,7 @@ export default function OnboardingPage() {
             </Button>
           </div>
         )}
+        </div>
       </div>
     </div>
   );

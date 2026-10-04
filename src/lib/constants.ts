@@ -272,17 +272,131 @@ export const NAMED_COLORS = [
 ] as const;
 
 // Real, recognizable clothing/footwear brands, grouped the way the brand
-// picker presents them. Text-based tiles only — no fabricated logos. Users
-// pick what they actually wear; nothing here claims any partnership.
-export const BRAND_CATALOG: Record<string, string[]> = {
-  Streetwear: ["Nike", "Adidas", "Supreme", "Stussy", "Carhartt WIP", "Palace", "Champion"],
-  Sportswear: ["Nike", "Adidas", "Puma", "Under Armour", "New Balance", "Decathlon", "ASICS"],
-  Denim: ["Levi's", "Wrangler", "Lee", "Diesel", "True Religion", "Pepe Jeans"],
-  Formal: ["Allen Solly", "Arrow", "Van Heusen", "Blackberrys", "Louis Philippe", "Hugo Boss"],
-  Luxury: ["Calvin Klein", "Ralph Lauren", "Tommy Hilfiger", "Armani Exchange", "Michael Kors", "Lacoste"],
-  Outdoor: ["The North Face", "Columbia", "Patagonia", "Timberland", "Woodland"],
-  Footwear: ["Converse", "Vans", "Crocs", "Skechers", "Clarks", "Bata", "Red Tape", "Steve Madden"],
-  Accessories: ["Fossil", "Titan", "Casio", "Ray-Ban"],
+// picker presents them. `domain` is each brand's real site, used ONLY to
+// look up its own public favicon as a lightweight logo (see
+// BrandPicker.tsx) — never a fabricated or hand-drawn logo, and the picker
+// falls back to a clean text tile if a domain's favicon can't be found.
+// Spans multiple price tiers deliberately (Decathlon/Max Fashion through
+// Gucci/Balenciaga), not just luxury. Nothing here claims any partnership.
+export type BrandEntry = { name: string; domain: string };
+export const BRAND_CATALOG: Record<string, BrandEntry[]> = {
+  Streetwear: [
+    { name: "Nike", domain: "nike.com" },
+    { name: "Adidas", domain: "adidas.com" },
+    { name: "Supreme", domain: "supremenewyork.com" },
+    { name: "Stussy", domain: "stussy.com" },
+    { name: "Carhartt WIP", domain: "carhartt-wip.com" },
+    { name: "Palace", domain: "palaceskateboards.com" },
+    { name: "Champion", domain: "champion.com" },
+    { name: "BAPE", domain: "bape.com" },
+    { name: "Off-White", domain: "off---white.com" },
+    { name: "Kith", domain: "kith.com" },
+    { name: "Stone Island", domain: "stoneisland.com" },
+  ],
+  Sportswear: [
+    { name: "Nike", domain: "nike.com" },
+    { name: "Adidas", domain: "adidas.com" },
+    { name: "Puma", domain: "puma.com" },
+    { name: "Under Armour", domain: "underarmour.com" },
+    { name: "New Balance", domain: "newbalance.com" },
+    { name: "Decathlon", domain: "decathlon.com" },
+    { name: "ASICS", domain: "asics.com" },
+    { name: "Reebok", domain: "reebok.com" },
+    { name: "FILA", domain: "fila.com" },
+    { name: "Lululemon", domain: "lululemon.com" },
+    { name: "Gymshark", domain: "gymshark.com" },
+  ],
+  Denim: [
+    { name: "Levi's", domain: "levi.com" },
+    { name: "Wrangler", domain: "wrangler.com" },
+    { name: "Lee", domain: "lee.com" },
+    { name: "Diesel", domain: "diesel.com" },
+    { name: "True Religion", domain: "truereligion.com" },
+    { name: "Pepe Jeans", domain: "pepejeans.com" },
+    { name: "Lucky Brand", domain: "luckybrand.com" },
+  ],
+  Formal: [
+    { name: "Allen Solly", domain: "allensolly.abfrl.in" },
+    { name: "Arrow", domain: "arrow.abfrl.in" },
+    { name: "Van Heusen", domain: "vanheusen.abfrl.in" },
+    { name: "Blackberrys", domain: "blackberrys.com" },
+    { name: "Louis Philippe", domain: "louisphilippe.abfrl.in" },
+    { name: "Hugo Boss", domain: "hugoboss.com" },
+    { name: "Raymond", domain: "raymond.in" },
+    { name: "Peter England", domain: "peterengland.abfrl.in" },
+  ],
+  Luxury: [
+    { name: "Calvin Klein", domain: "calvinklein.com" },
+    { name: "Ralph Lauren", domain: "ralphlauren.com" },
+    { name: "Tommy Hilfiger", domain: "tommy.com" },
+    { name: "Armani Exchange", domain: "armaniexchange.com" },
+    { name: "Michael Kors", domain: "michaelkors.com" },
+    { name: "Lacoste", domain: "lacoste.com" },
+    { name: "Gucci", domain: "gucci.com" },
+    { name: "Prada", domain: "prada.com" },
+    { name: "Burberry", domain: "burberry.com" },
+    { name: "Versace", domain: "versace.com" },
+    { name: "Balenciaga", domain: "balenciaga.com" },
+    { name: "Saint Laurent", domain: "ysl.com" },
+  ],
+  "Contemporary / Designer": [
+    { name: "COS", domain: "cosstores.com" },
+    { name: "Acne Studios", domain: "acnestudios.com" },
+    { name: "Jacquemus", domain: "jacquemus.com" },
+    { name: "A.P.C.", domain: "apc-us.com" },
+  ],
+  Outdoor: [
+    { name: "The North Face", domain: "thenorthface.com" },
+    { name: "Columbia", domain: "columbia.com" },
+    { name: "Patagonia", domain: "patagonia.com" },
+    { name: "Timberland", domain: "timberland.com" },
+    { name: "Woodland", domain: "woodlandworldwide.com" },
+    { name: "Arc'teryx", domain: "arcteryx.com" },
+    { name: "Salomon", domain: "salomon.com" },
+  ],
+  Footwear: [
+    { name: "Converse", domain: "converse.com" },
+    { name: "Vans", domain: "vans.com" },
+    { name: "Crocs", domain: "crocs.com" },
+    { name: "Skechers", domain: "skechers.com" },
+    { name: "Clarks", domain: "clarks.com" },
+    { name: "Bata", domain: "bata.com" },
+    { name: "Red Tape", domain: "redtape.com" },
+    { name: "Steve Madden", domain: "stevemadden.com" },
+    { name: "Dr. Martens", domain: "drmartens.com" },
+    { name: "Birkenstock", domain: "birkenstock.com" },
+  ],
+  Accessories: [
+    { name: "Fossil", domain: "fossil.com" },
+    { name: "Titan", domain: "titan.co.in" },
+    { name: "Casio", domain: "casio.com" },
+    { name: "Ray-Ban", domain: "ray-ban.com" },
+    { name: "Oakley", domain: "oakley.com" },
+    { name: "Fastrack", domain: "fastrack.in" },
+  ],
+  "Fast Fashion": [
+    { name: "Zara", domain: "zara.com" },
+    { name: "H&M", domain: "hm.com" },
+    { name: "Uniqlo", domain: "uniqlo.com" },
+    { name: "Gap", domain: "gap.com" },
+    { name: "Forever 21", domain: "forever21.com" },
+    { name: "Mango", domain: "mango.com" },
+    { name: "Shein", domain: "shein.com" },
+    { name: "Urban Outfitters", domain: "urbanoutfitters.com" },
+  ],
+  "Indian Contemporary": [
+    { name: "FabIndia", domain: "fabindia.com" },
+    { name: "Westside", domain: "westside.com" },
+    { name: "Max Fashion", domain: "maxfashion.com" },
+    { name: "Pantaloons", domain: "pantaloons.com" },
+    { name: "W for Woman", domain: "wforwoman.com" },
+    { name: "BIBA", domain: "biba.in" },
+    { name: "Manyavar", domain: "manyavar.com" },
+  ],
+  Workwear: [
+    { name: "Dickies", domain: "dickies.com" },
+    { name: "Carhartt", domain: "carhartt.com" },
+  ],
 };
 
 // "Why are you here" intents — onboarding step, stored as User.intent.
@@ -354,23 +468,11 @@ export const STYLE_PLAY_QUESTIONS: Record<
 };
 
 // Onboarding's "right if you'd wear it, left if you wouldn't" style-swipe
-// deck — the same real clothing photographs in public/demo-wardrobe/ (not
-// stock photography, not generated artwork), each tagged with its real
-// attributes so a swipe answer feeds the exact same learnedPreferences
-// engine real outfit feedback does (see prisma/seed.ts for where these
-// same photos + attributes are also used to seed the demo wardrobe).
-export const ONBOARDING_SWIPE_DECK = [
-  { imageUrl: "/demo-wardrobe/black-polo.jpg", label: "Smart Casual", style: "Smart Casual", fit: "Regular", primaryColor: "Black", formality: 3, category: "Tops" },
-  { imageUrl: "/demo-wardrobe/orange-graphic-tee.jpg", label: "Streetwear", style: "Streetwear", fit: "Oversized", primaryColor: "Orange", formality: 1, category: "Tops" },
-  { imageUrl: "/demo-wardrobe/pink-shirt.jpg", label: "Classic", style: "Classic", fit: "Regular", primaryColor: "Pink", formality: 3, category: "Tops" },
-  { imageUrl: "/demo-wardrobe/green-tshirt.jpg", label: "Minimal", style: "Minimal", fit: "Regular", primaryColor: "Green", formality: 1, category: "Tops" },
-  { imageUrl: "/demo-wardrobe/sage-trousers.jpg", label: "Relaxed", style: "Relaxed", fit: "Regular", primaryColor: "Sage Green", formality: 2, category: "Bottoms" },
-  { imageUrl: "/demo-wardrobe/black-jeans.jpg", label: "Classic", style: "Classic", fit: "Regular", primaryColor: "Black", formality: 2, category: "Bottoms" },
-  { imageUrl: "/demo-wardrobe/white-sneakers.jpg", label: "Athletic", style: "Sporty", fit: "Regular", primaryColor: "White", formality: 1, category: "Shoes" },
-  { imageUrl: "/demo-wardrobe/black-sneakers.jpg", label: "Casual", style: "Casual", fit: "Regular", primaryColor: "Black", formality: 1, category: "Shoes" },
-  { imageUrl: "/demo-wardrobe/navy-cap.jpg", label: "Casual", style: "Casual", fit: "Regular", primaryColor: "Navy", formality: 1, category: "Accessories" },
-  { imageUrl: "/demo-wardrobe/black-watch.jpg", label: "Minimal", style: "Minimal", fit: "Regular", primaryColor: "Black", formality: 3, category: "Accessories" },
-] as const;
+// deck now lives in src/lib/publicFashion.ts (STYLE_LEARNING_DECK) — real
+// people wearing real outfits, sourced from the web, deliberately NOT built
+// from this project's demo-wardrobe photos (those are real photos of a real
+// person's own closet, seeded for THIS account's wardrobe only — reusing
+// them in a public-facing survey was a privacy bug, not a style choice).
 
 export const IMPORTANCE_FIELDS = [
   { key: "comfortImportance", label: "How important is comfort?" },
