@@ -124,24 +124,24 @@ const TEEN_BOYS: StyleLearningCard[] = [
 // a Yeezy-style foam runner — and were excluded), so every combo currently
 // reuses that one pair; more generic, non-branded shoe renders would be the
 // single highest-value addition to this pool.
-type WheelItem = { imageUrl: string; category: "Top" | "Bottom" | "Shoes" | "Accessory"; style: string; primaryColor: string };
+export type WheelItem = { imageUrl: string; category: "Top" | "Bottom" | "Shoes" | "Accessory"; style: string; primaryColor: string };
 
-const WHEEL_TOPS: WheelItem[] = [
+export const WHEEL_TOPS: WheelItem[] = [
   { imageUrl: "/wheel/tops/01.jpg", category: "Top", style: "Minimal", primaryColor: "White" },
   { imageUrl: "/wheel/tops/02.jpg", category: "Top", style: "Streetwear", primaryColor: "Black" },
   { imageUrl: "/wheel/tops/03.jpg", category: "Top", style: "Casual", primaryColor: "Blue" },
   { imageUrl: "/wheel/tops/04.jpg", category: "Top", style: "Minimal", primaryColor: "Cream" },
   { imageUrl: "/wheel/tops/05.jpg", category: "Top", style: "Preppy", primaryColor: "Green" },
 ];
-const WHEEL_BOTTOMS: WheelItem[] = [
+export const WHEEL_BOTTOMS: WheelItem[] = [
   { imageUrl: "/wheel/bottoms/01.jpg", category: "Bottom", style: "Casual", primaryColor: "Blue" },
   { imageUrl: "/wheel/bottoms/02.jpg", category: "Bottom", style: "Streetwear", primaryColor: "Olive" },
   { imageUrl: "/wheel/bottoms/03.jpg", category: "Bottom", style: "Formal", primaryColor: "Black" },
   { imageUrl: "/wheel/bottoms/04.jpg", category: "Bottom", style: "Sporty", primaryColor: "Grey" },
   { imageUrl: "/wheel/bottoms/05.jpg", category: "Bottom", style: "Preppy", primaryColor: "Tan" },
 ];
-const WHEEL_SHOES: WheelItem[] = [{ imageUrl: "/wheel/shoes/01.jpg", category: "Shoes", style: "Minimal", primaryColor: "Cream" }];
-const WHEEL_ACCESSORIES: WheelItem[] = [
+export const WHEEL_SHOES: WheelItem[] = [{ imageUrl: "/wheel/shoes/01.jpg", category: "Shoes", style: "Minimal", primaryColor: "Cream" }];
+export const WHEEL_ACCESSORIES: WheelItem[] = [
   { imageUrl: "/wheel/accessories/01.jpg", category: "Accessory", style: "Streetwear", primaryColor: "Black" },
   { imageUrl: "/wheel/accessories/02.jpg", category: "Accessory", style: "Minimal", primaryColor: "Black" },
   { imageUrl: "/wheel/accessories/03.jpg", category: "Accessory", style: "Streetwear", primaryColor: "Black" },
@@ -205,6 +205,21 @@ export function wheelResultCardsFor(segment: string): { imageUrl: string; label:
   return combo.map((item) => ({ imageUrl: item.imageUrl, label: item.category }));
 }
 
+// The style directions the landing page's "your style is not a template"
+// section lets a visitor explore, pre-signup — matches the real
+// DESIRED_STYLES vocabulary used in onboarding/style preferences
+// (src/lib/constants.ts) wherever the small wheel item pool has coverage.
+export const STYLE_DISCOVERY_OPTIONS = ["Minimal", "Streetwear", "Smart Casual", "Sporty", "Preppy", "Formal"];
+
+// Public entry point for composing a combo biased toward an exact style —
+// used by the landing page's style-discovery picker. "Smart Casual" isn't
+// one of this pool's own style tags, so it maps onto the closest neighbor
+// (Preppy) rather than falling through to a fully random combo.
+export function comboForStyle(style: string): WheelItem[] {
+  const resolved = style === "Smart Casual" ? "Preppy" : style;
+  return buildWheelCombo(resolved);
+}
+
 // Safe, no-model fallback "look" deck for any onboarding cohort without its
 // own audited photo set (currently: under-18 + Woman, and under-18 + Other)
 // — flatlay combo cards built from the same unisex item pool as the wheel,
@@ -242,6 +257,20 @@ function teenFallbackDeck(): StyleLearningCard[] {
   );
 }
 
+// Evenly samples down to `max` cards instead of just slicing the front —
+// the source decks are grouped in style blocks (4-5 Casual, then 4-5
+// Formal, ...), so a plain slice(0, N) would show almost nothing but the
+// first style or two. Onboarding deliberately asks for only a handful of
+// swipes (see the "vibe" + "swipe" steps in onboarding/page.tsx), so this
+// keeps that handful spread across every style the deck has.
+function sampleSpread<T>(deck: T[], max: number): T[] {
+  if (deck.length <= max) return deck;
+  const step = deck.length / max;
+  return Array.from({ length: max }, (_, i) => deck[Math.floor(i * step)]);
+}
+
+const SWIPE_DECK_SIZE = 8;
+
 // Picks the onboarding swipe deck for the user's actual "shop for" and age
 // answers. Never shows an adult-modeled photo to a user who said they're
 // under 18 — the under-18 branches only ever read from TEEN_BOYS or the
@@ -250,15 +279,15 @@ export function styleLearningDeckFor(shopFor: string, ageRange: string): StyleLe
   const isTeen = ageRange === "Under 18";
 
   if (isTeen) {
-    if (shopFor === "Man") return TEEN_BOYS;
+    if (shopFor === "Man") return sampleSpread(TEEN_BOYS, SWIPE_DECK_SIZE);
     // "Woman" and "Other" (and not-yet-answered) all get the safe
     // no-model fallback — there is no audited Teen Girls photo set, and
     // forcing "Other" into a binary bucket would be its own problem.
-    return teenFallbackDeck();
+    return sampleSpread(teenFallbackDeck(), SWIPE_DECK_SIZE);
   }
 
-  if (shopFor === "Woman") return ADULT_WOMEN;
-  if (shopFor === "Man") return ADULT_MEN;
+  if (shopFor === "Woman") return sampleSpread(ADULT_WOMEN, SWIPE_DECK_SIZE);
+  if (shopFor === "Man") return sampleSpread(ADULT_MEN, SWIPE_DECK_SIZE);
 
   // "Other" or not yet answered: an interleaved mix so the deck is never
   // empty and isn't skewed toward either adult set.
@@ -267,5 +296,5 @@ export function styleLearningDeckFor(shopFor: string, ageRange: string): StyleLe
     if (ADULT_MEN[i]) mixed.push(ADULT_MEN[i]);
     if (ADULT_WOMEN[i]) mixed.push(ADULT_WOMEN[i]);
   }
-  return mixed;
+  return sampleSpread(mixed, SWIPE_DECK_SIZE);
 }

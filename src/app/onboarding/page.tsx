@@ -3,25 +3,21 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ThumbsDown, ThumbsUp, Sparkles, Shuffle, ShoppingBag, SportShoe } from "lucide-react";
+import { ThumbsDown, ThumbsUp, Sparkles, Shuffle, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Input, Textarea } from "@/components/ui/Field";
+import { Input } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
 import { ImportanceScale } from "@/components/ImportanceScale";
 import { PersonalAppearanceUpload } from "@/components/PersonalAppearanceUpload";
 import { PersonalAppearanceReview } from "@/components/PersonalAppearanceReview";
-import { BrandPicker } from "@/components/BrandPicker";
 import { Spark } from "@/components/Brand";
 import { Mascot } from "@/components/Mascot";
-import { HeightUnitInput, type HeightUnit } from "@/components/HeightUnitInput";
-import { LoaferIcon, BootIcon, FormalShoeIcon, SandalIcon } from "@/components/icons/FootwearIcons";
+import { type HeightUnit } from "@/components/HeightUnitInput";
 import { cn } from "@/lib/cn";
 import {
   DESIRED_STYLES,
   OCCASIONS,
   FIT_OPTIONS,
-  SHOE_TYPES,
-  NAMED_COLORS,
   ONBOARDING_INTENTS,
   SHOP_FOR_OPTIONS,
 } from "@/lib/constants";
@@ -32,14 +28,6 @@ const INTENT_ICON: Record<string, React.ComponentType<{ className?: string }>> =
   "build-wardrobe": Sparkles,
   "utilize-wardrobe": Shuffle,
   "shop-mindfully": ShoppingBag,
-};
-
-const FOOTWEAR_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
-  Sneakers: SportShoe,
-  Loafers: LoaferIcon,
-  Boots: BootIcon,
-  "Formal shoes": FormalShoeIcon,
-  Sandals: SandalIcon,
 };
 
 type StyleReaction = { style: string; fit: string; primaryColor: string; formality: number; category: string; reaction: "like" | "dislike" };
@@ -92,23 +80,23 @@ const INITIAL: Data = {
 
 const AGE_RANGES = ["Under 18", "18–24", "25–34", "35–44", "45–54", "55+"];
 
+// Trimmed from an earlier 18-step version: pure transition screens (no
+// input) were cut, several low-stakes optional preferences — usual
+// clothing, colours, footwear, preferred brands — are deferred to Style
+// Profile (src/app/(app)/style-profile/page.tsx already edits every one of
+// them post-onboarding), and the two preference-slider steps were merged
+// into one. Pairs with the swipe deck itself being trimmed from 20 cards to
+// 8 (see sampleSpread in lib/publicFashion.ts) — together, a real ~2-3
+// minute first pass rather than a 20-minute survey.
 const STEPS = [
   "welcome",
   "nickname",
   "shopFor",
   "intent",
-  "styleIntro",
   "vibe",
-  "usualClothing",
   "occasions",
-  "fitHeight",
-  "colors",
-  "footwear",
-  "brands",
-  "swipeIntro",
   "swipe",
-  "adventurousness",
-  "importance",
+  "preferences",
   "photo",
   "review",
 ] as const;
@@ -306,32 +294,13 @@ export default function OnboardingPage() {
           </Step>
         )}
 
-        {step === "styleIntro" && (
-          <IntroScreen
-            title="now let's talk style."
-            body="A few quick taps and matchin' starts building your Style DNA — the thing every outfit suggestion runs through."
-            items={[
-              { icon: Sparkles, label: "Your vibe" },
-              { icon: ShoppingBag, label: "What you wear" },
-              { icon: Shuffle, label: "Fit & colour" },
-            ]}
-          />
-        )}
-
         {step === "vibe" && (
-          <Step title="what's your vibe?" subtitle="Pick as many as feel like you.">
-            <StyleSelector options={DESIRED_STYLES} selected={data.preferredStyles} onChange={(v) => set("preferredStyles", v)} />
-          </Step>
-        )}
-
-        {step === "usualClothing" && (
-          <Step title="how would you describe your usual clothing?" subtitle="A sentence or two is plenty.">
-            <Textarea
-              rows={4}
-              value={data.usualClothing}
-              onChange={(e) => set("usualClothing", e.target.value)}
-              placeholder="e.g. Mostly neutral tones, clean fits, not too flashy."
-            />
+          <Step title="what's your vibe?" subtitle="Pick as many as feel like you — this builds your Style DNA.">
+            <div className="mb-6">
+              <StyleSelector options={DESIRED_STYLES} selected={data.preferredStyles} onChange={(v) => set("preferredStyles", v)} />
+            </div>
+            <p className="text-sm font-medium mb-3">Fit preference</p>
+            <StyleSelector options={FIT_OPTIONS} selected={[data.fitPreference]} onChange={(v) => set("fitPreference", v[0])} multiple={false} />
           </Step>
         )}
 
@@ -339,129 +308,6 @@ export default function OnboardingPage() {
           <Step title="what occasions do you dress for?" subtitle="Select everything that applies to your week.">
             <StyleSelector options={OCCASIONS} selected={data.occasions} onChange={(v) => set("occasions", v)} />
           </Step>
-        )}
-
-        {step === "fitHeight" && (
-          <Step title="let's get your fit right" subtitle="Helps proportion-aware recommendations from the start.">
-            <div className="mb-6">
-              <p className="text-sm font-medium mb-3">Fit preference</p>
-              <StyleSelector options={FIT_OPTIONS} selected={[data.fitPreference]} onChange={(v) => set("fitPreference", v[0])} multiple={false} />
-            </div>
-            <div>
-              <p className="text-sm font-medium mb-2.5">Height (optional)</p>
-              <HeightUnitInput
-                valueCm={data.heightCm}
-                onChangeCm={(cm) => set("heightCm", cm)}
-                unit={data.heightUnit}
-                onUnitChange={(u) => set("heightUnit", u)}
-              />
-            </div>
-          </Step>
-        )}
-
-        {step === "colors" && (
-          <Step title="what colours do you usually wear?" subtitle="Tap to mark love or avoid — nice, specific names, not just hex codes.">
-            <div className="space-y-6">
-              <div>
-                <p className="text-sm font-medium mb-3">Colours you love</p>
-                <div className="flex flex-wrap gap-2">
-                  {NAMED_COLORS.map((c) => {
-                    const active = data.colorsLove.includes(c.label);
-                    return (
-                      <button
-                        key={c.label}
-                        onClick={() =>
-                          set(
-                            "colorsLove",
-                            active ? data.colorsLove.filter((v) => v !== c.label) : [...data.colorsLove, c.label]
-                          )
-                        }
-                        className={cn(
-                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer",
-                          active ? "border-ink bg-ink text-paper" : "border-line hover:border-ink/40"
-                        )}
-                      >
-                        <span className="h-3.5 w-3.5 rounded-full border border-line/50 shrink-0" style={{ backgroundColor: c.hex }} />
-                        {c.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-3">Colours you avoid</p>
-                <div className="flex flex-wrap gap-2">
-                  {NAMED_COLORS.filter((c) => !data.colorsLove.includes(c.label)).map((c) => {
-                    const active = data.colorsAvoid.includes(c.label);
-                    return (
-                      <button
-                        key={c.label}
-                        onClick={() =>
-                          set(
-                            "colorsAvoid",
-                            active ? data.colorsAvoid.filter((v) => v !== c.label) : [...data.colorsAvoid, c.label]
-                          )
-                        }
-                        className={cn(
-                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors cursor-pointer",
-                          active ? "border-warning bg-warning/15 text-warning" : "border-line text-ink-soft hover:border-ink/40"
-                        )}
-                      >
-                        <span className="h-3.5 w-3.5 rounded-full border border-line/50 shrink-0" style={{ backgroundColor: c.hex }} />
-                        {c.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </Step>
-        )}
-
-        {step === "footwear" && (
-          <Step title="what footwear do you gravitate to?" subtitle="Sneakers, loafers, boots — pick your regulars.">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {SHOE_TYPES.map((shoe) => {
-                const Icon = FOOTWEAR_ICON[shoe] ?? SportShoe;
-                const active = data.shoePreference.includes(shoe);
-                return (
-                  <button
-                    key={shoe}
-                    onClick={() =>
-                      set(
-                        "shoePreference",
-                        active ? data.shoePreference.filter((s) => s !== shoe) : [...data.shoePreference, shoe]
-                      )
-                    }
-                    className={cn(
-                      "flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-3 transition-colors cursor-pointer",
-                      active ? "border-lime bg-lime/10" : "border-line hover:border-ink/30"
-                    )}
-                  >
-                    <Icon className={cn("h-6 w-6", active ? "text-lime" : "text-ink-soft")} />
-                    <span className="text-sm font-medium">{shoe}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </Step>
-        )}
-
-        {step === "brands" && (
-          <Step title="pick brands you love" subtitle="I'll figure out the rest. Totally optional.">
-            <BrandPicker selected={data.preferredBrands} onChange={(v) => set("preferredBrands", v)} />
-          </Step>
-        )}
-
-        {step === "swipeIntro" && (
-          <IntroScreen
-            title="now, teach me your taste."
-            body="I'll show you real outfits — swipe right if you'd actually wear it, left if you wouldn't. No wrong answers, just data matchin' learns from."
-            items={[
-              { icon: ThumbsDown, label: "Not for me" },
-              { icon: ThumbsUp, label: "I'd wear it" },
-            ]}
-          />
         )}
 
         {step === "swipe" && (
@@ -473,7 +319,9 @@ export default function OnboardingPage() {
               className="mb-3"
             />
             <h1 className="font-display text-3xl mb-2 leading-tight lowercase">right if you&apos;d wear it.</h1>
-            <p className="text-sm text-stone mb-8">Left if you wouldn&apos;t. {swipeDeck.length - swipeIndex} left.</p>
+            <p className="text-sm text-stone mb-8">
+              Swipe right if you&apos;d actually wear it, left if you wouldn&apos;t — no wrong answers. {swipeDeck.length - swipeIndex} left.
+            </p>
             <div className="relative mx-auto max-w-xs">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-line bg-paper-alt">
                 {swipeDeck[swipeIndex].images.length === 1 ? (
@@ -520,15 +368,13 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {step === "adventurousness" && (
-          <Step title="how far should we push it?" subtitle="1 is safe and familiar, 5 is surprise me.">
-            <ImportanceScale value={data.adventurousness} onChange={(v) => set("adventurousness", v)} lowLabel="safe" highLabel="surprise me" />
-          </Step>
-        )}
-
-        {step === "importance" && (
-          <Step title="what matters most when you get dressed?" subtitle="Rate each from 1 to 5.">
+        {step === "preferences" && (
+          <Step title="a few last things." subtitle="Rate each from 1 to 5 — these fine-tune every suggestion.">
             <div className="space-y-6">
+              <div>
+                <p className="text-sm font-medium mb-3">How far should we push it?</p>
+                <ImportanceScale value={data.adventurousness} onChange={(v) => set("adventurousness", v)} lowLabel="safe" highLabel="surprise me" />
+              </div>
               <div>
                 <p className="text-sm font-medium mb-3">Comfort</p>
                 <ImportanceScale value={data.comfortImportance} onChange={(v) => set("comfortImportance", v)} />
@@ -606,38 +452,6 @@ export default function OnboardingPage() {
           </div>
         )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-// A short, mascot-led interstitial dropped between onboarding sections —
-// not a form step, just a beat of "here's what's next and why" so the
-// survey doesn't read as one undifferentiated question list. Reuses the
-// same Back/Continue footer as every other step (see hideGenericNav).
-function IntroScreen({
-  title,
-  body,
-  items,
-}: {
-  title: string;
-  body: string;
-  items: { icon: React.ComponentType<{ className?: string }>; label: string }[];
-}) {
-  return (
-    <div className="relative animate-fade-in text-center py-6">
-      <Mascot expression="curious" size={48} className="mx-auto mb-6" />
-      <h1 className="font-display text-3xl mb-3 leading-tight lowercase relative">{title}</h1>
-      <p className="text-sm text-stone mb-8 max-w-sm mx-auto relative">{body}</p>
-      <div className="flex items-center justify-center gap-4">
-        {items.map(({ icon: Icon, label }, i) => (
-          <div key={i} className="flex flex-col items-center gap-2 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
-            <span className="h-11 w-11 rounded-full bg-paper-alt border border-line flex items-center justify-center text-ink-soft">
-              <Icon className="h-4.5 w-4.5" />
-            </span>
-            <span className="text-xs text-stone">{label}</span>
-          </div>
-        ))}
       </div>
     </div>
   );
