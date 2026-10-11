@@ -125,12 +125,13 @@ export default function OnboardingPage() {
   const step = STEPS[stepIndex];
   const totalSteps = STEPS.length;
 
-  // Real people wearing real outfits, sourced from the web — never the
-  // user's own wardrobe (see lib/publicFashion.ts). Filtered by whichever
-  // gender the "how do you want me to shop for you?" step already
-  // established, so the deck matches what the user is actually shopping
-  // for; computed once per shopFor answer so it doesn't reshuffle mid-swipe.
-  const swipeDeck = useMemo(() => styleLearningDeckFor(data.shopFor), [data.shopFor]);
+  // Full-outfit looks, never the user's own wardrobe (see
+  // lib/publicFashion.ts). Filtered by both the "how do you want me to shop
+  // for you?" answer and the selected age range, so under-18 users only
+  // ever see the audited teen set (or the no-model fallback deck) — never
+  // an adult-modeled photo. Computed once per answer pair so it doesn't
+  // reshuffle mid-swipe.
+  const swipeDeck = useMemo(() => styleLearningDeckFor(data.shopFor, data.ageRange), [data.shopFor, data.ageRange]);
 
   function set<K extends keyof Data>(key: K, value: Data[K]) {
     setData((d) => ({ ...d, [key]: value }));
@@ -475,14 +476,26 @@ export default function OnboardingPage() {
             <p className="text-sm text-stone mb-8">Left if you wouldn&apos;t. {swipeDeck.length - swipeIndex} left.</p>
             <div className="relative mx-auto max-w-xs">
               <div className="relative aspect-[3/4] rounded-2xl overflow-hidden border border-line bg-paper-alt">
-                <Image
-                  key={swipeDeck[swipeIndex].imageUrl}
-                  src={swipeDeck[swipeIndex].imageUrl}
-                  alt={swipeDeck[swipeIndex].label}
-                  fill
-                  sizes="320px"
-                  className="object-cover animate-fade-in"
-                />
+                {swipeDeck[swipeIndex].images.length === 1 ? (
+                  <Image
+                    key={swipeDeck[swipeIndex].images[0]}
+                    src={swipeDeck[swipeIndex].images[0]}
+                    alt={swipeDeck[swipeIndex].label}
+                    fill
+                    sizes="320px"
+                    className="object-cover animate-fade-in"
+                  />
+                ) : (
+                  // No-model fallback deck: a flatlay combo grid rather than
+                  // a single photo (see teenFallbackDeck in publicFashion.ts).
+                  <div key={swipeDeck[swipeIndex].images.join(",")} className="grid grid-cols-2 gap-1 h-full p-1 animate-fade-in">
+                    {swipeDeck[swipeIndex].images.map((src) => (
+                      <div key={src} className="relative rounded-lg overflow-hidden bg-paper">
+                        <Image src={src} alt={swipeDeck[swipeIndex].label} fill sizes="160px" className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-ink/70 to-transparent p-4">
                   <p className="text-white text-sm font-medium">{swipeDeck[swipeIndex].label}</p>
                 </div>

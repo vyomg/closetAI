@@ -15,6 +15,14 @@ export default auth((req) => {
     // Static marketing imagery for the public landing page — needs to be
     // reachable by signed-out visitors, same as demo-images/uploads above.
     pathname.startsWith("/landing") ||
+    // Onboarding style-deck photos and the Surprise Me wheel's item images
+    // (src/lib/publicFashion.ts) — same requirement as /landing: reachable
+    // signed-out (the wheel is on the landing page), and critically, must
+    // also be reachable by Next's own unauthenticated server-to-server
+    // fetch when the image optimizer processes them, or sharp receives the
+    // redirected /login page instead of image bytes.
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/wheel") ||
     pathname.startsWith("/_next") ||
     // Public, token-gated outfit sharing and "Ask a Friend" — the friend
     // responding here is never expected to have (or need) a matchin'
