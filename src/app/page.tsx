@@ -10,6 +10,7 @@ import { StoreBadges } from "@/components/StoreBadges";
 import { MatchinWheel } from "@/components/MatchinWheel";
 import { StyleDiscovery } from "@/components/landing/StyleDiscovery";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
+import { InfiniteWardrobe } from "@/components/landing/InfiniteWardrobe";
 import { ArrowRight, Shirt, Compass, Sparkle } from "lucide-react";
 import { wheelResultCardsFor, WHEEL_TOPS, WHEEL_BOTTOMS, WHEEL_ACCESSORIES } from "@/lib/publicFashion";
 
@@ -79,6 +80,9 @@ export default function LandingPage() {
           <StoreBadges dark className="mt-8 flex flex-wrap items-center justify-center gap-3" />
         </section>
       </div>
+
+      {/* ===== THE INFINITE WARDROBE — signature scroll sequence ===== */}
+      <InfiniteWardrobe />
 
       {/* ===== THE PROBLEM (light) — clutter resolving into a clean fit ===== */}
       <section className="border-b border-line overflow-hidden">
