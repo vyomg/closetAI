@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -19,9 +18,9 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { Spark, MatchinAvatar } from "@/components/Brand";
+import { Mascot } from "@/components/Mascot";
 import { Button } from "@/components/ui/Button";
 import { OutfitCard } from "@/components/OutfitCard";
-import { FloatingWords } from "@/components/FloatingWords";
 import { cn } from "@/lib/cn";
 import { OCCASIONS, DESIRED_STYLES } from "@/lib/constants";
 import type { ClothingItemDTO, OutfitDTO } from "@/lib/clientTypes";
@@ -47,14 +46,6 @@ const MODE_DESC: Record<ChatMode, string> = {
 
 const THINKING_STAGES = ["Understanding...", "Checking your wardrobe...", "Matching colours...", "Finalizing..."];
 
-export default function ChatNowPage() {
-  return (
-    <Suspense>
-      <ChatNowInner />
-    </Suspense>
-  );
-}
-
 // Chat Now is a full-screen workspace, not a page nested inside the usual
 // padded app shell — a real conversation needs its own header, its own
 // scrolling message column, and a composer genuinely pinned to the bottom
@@ -63,11 +54,13 @@ export default function ChatNowPage() {
 // instead (fixed, offset past the desktop sidebar, MobileNav hides itself
 // on this route — see components/MobileNav.tsx) the same way a dedicated
 // chat app would, with its own "back" affordance replacing the bottom nav.
-function ChatNowInner() {
-  const searchParams = useSearchParams();
-  const prefillAsk = searchParams.get("ask");
-  const aboutOutfitId = searchParams.get("aboutOutfit");
-
+//
+// No useSearchParams() here on purpose — Next.js requires wrapping it in
+// <Suspense>, which this page previously did; both "?ask=" and
+// "?aboutOutfit=" links into this page only need to be read once, client-
+// side, to prefill the composer, so reading window.location directly
+// inside the relevant effects gets identical behavior without it.
+export default function ChatNowPage() {
   const [threads, setThreads] = useState<ThreadSummary[] | null>(null);
   const [threadId, setThreadId] = useState<string | null>(null);
   const [mode, setMode] = useState<ChatMode>("closet");
@@ -104,22 +97,22 @@ function ChatNowInner() {
     fetch("/api/clothing")
       .then((r) => r.json())
       .then(setWardrobe);
-  }, []);
 
-  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const prefillAsk = params.get("ask");
     if (prefillAsk) setText(prefillAsk);
-  }, [prefillAsk]);
 
-  useEffect(() => {
-    if (!aboutOutfitId) return;
-    fetch(`/api/outfits/${aboutOutfitId}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((outfit: OutfitDTO | null) => {
-        if (!outfit) return;
-        const names = outfit.items.map((i) => i.name).join(", ");
-        setText(`About my ${outfit.occasion.toLowerCase()} outfit (${names}): `);
-      });
-  }, [aboutOutfitId]);
+    const aboutOutfitId = params.get("aboutOutfit");
+    if (aboutOutfitId) {
+      fetch(`/api/outfits/${aboutOutfitId}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((outfit: OutfitDTO | null) => {
+          if (!outfit) return;
+          const names = outfit.items.map((i) => i.name).join(", ");
+          setText(`About my ${outfit.occasion.toLowerCase()} outfit (${names}): `);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -347,8 +340,7 @@ function ChatNowInner() {
             <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
               {!threadId && messages.length === 0 && (
                 <div className="relative text-center py-14 sm:py-20 animate-fade-up">
-                  <FloatingWords words={["ASK", "MIX", "REMIX", "✦"]} />
-                  <MatchinAvatar className="h-9 w-9 text-lime mx-auto mb-4" />
+                  <Mascot expression="curious" size={40} className="mx-auto mb-4" />
                   <p className="font-display text-2xl lowercase mb-2 relative">hey — what are we dressing for?</p>
                   <p className="text-sm text-stone max-w-sm mx-auto relative">
                     Tell matchin&apos; what you&apos;re dressing for and it&apos;ll build something real from your actual wardrobe — or just chat.
@@ -389,7 +381,7 @@ function ChatNowInner() {
 
                 {sending && (
                   <div className="flex items-start gap-2.5">
-                    <Spark className="h-6 w-6 text-lime animate-spark-spin shrink-0 mt-1" />
+                    <Mascot expression="thinking" size={24} className="shrink-0 mt-1" />
                     <div className="rounded-2xl rounded-tl-sm border border-line bg-paper-alt px-4 py-2.5">
                       <p className="text-sm text-stone lowercase">matchin&apos;s thinkin&apos; — {THINKING_STAGES[thinkingStage]}</p>
                     </div>
@@ -537,7 +529,7 @@ function ChatNowInner() {
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
-              {!chatOnly && <p className="text-xs text-stone mt-2">Asking for an outfit uses 1 credit · chat-only mode is free</p>}
+              {!chatOnly && <p className="text-xs text-stone mt-2">Asking for an outfit uses 3 credits · chat-only mode is free</p>}
             </div>
           </div>
         </div>

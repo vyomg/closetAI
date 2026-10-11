@@ -14,7 +14,7 @@ import {
 } from "@/lib/outfitFilters";
 import { getWeatherForCity, getWeatherForCoordinates, weatherToSeasonHint } from "@/lib/weather";
 import { generateAndSaveOutfit } from "@/lib/generateAndSaveOutfit";
-import { spendCredits, OUTFIT_GENERATE_COST } from "@/lib/credits";
+import { spendCredits, CREDIT_COSTS, UNLIMITED_CREDITS } from "@/lib/credits";
 
 const GenerateSchema = z.object({
   occasion: z.string().min(1).default("Everyday"),
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     );
   }
 
-  if (user.creditBalance < OUTFIT_GENERATE_COST) {
+  if (!UNLIMITED_CREDITS && user.creditBalance < CREDIT_COSTS.OUTFIT_GENERATE) {
     return NextResponse.json(
       { error: "You're out of credits. Buy more to keep generating outfits.", code: "OUT_OF_CREDITS" },
       { status: 402 }
@@ -186,7 +186,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const spend = await spendCredits(user.id, OUTFIT_GENERATE_COST, "outfit_generate");
+  const spend = await spendCredits(user.id, CREDIT_COSTS.OUTFIT_GENERATE, "outfit_generate");
 
   return NextResponse.json({ ...generateResult.outfit, creditsRemaining: spend.balance });
 }

@@ -7,7 +7,7 @@ import { clothingItemToAI, userToStyleProfile, userToLearnedPreferences } from "
 import { recentOutfitItemIds } from "@/lib/outfitFilters";
 import { getWeatherForCity, getWeatherForCoordinates } from "@/lib/weather";
 import { generateAndSaveOutfit } from "@/lib/generateAndSaveOutfit";
-import { spendCredits, OUTFIT_GENERATE_COST } from "@/lib/credits";
+import { spendCredits, CREDIT_COSTS, UNLIMITED_CREDITS } from "@/lib/credits";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -68,7 +68,7 @@ export async function POST(req: Request, { params }: RouteParams) {
   const user = await db.user.findUnique({ where: { id: session.user.id } });
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  if (user.creditBalance < OUTFIT_GENERATE_COST) {
+  if (!UNLIMITED_CREDITS && user.creditBalance < CREDIT_COSTS.OUTFIT_REFINE) {
     return NextResponse.json(
       { error: "You're out of credits. Buy more to keep remixing outfits.", code: "OUT_OF_CREDITS" },
       { status: 402 }
@@ -148,7 +148,7 @@ export async function POST(req: Request, { params }: RouteParams) {
     );
   }
 
-  const spend = await spendCredits(user.id, OUTFIT_GENERATE_COST, "outfit_remix");
+  const spend = await spendCredits(user.id, CREDIT_COSTS.OUTFIT_REFINE, "outfit_remix");
 
   return NextResponse.json({ ...generateResult.outfit, creditsRemaining: spend.balance });
 }

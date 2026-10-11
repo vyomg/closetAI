@@ -1,14 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Shuffle, Check, Pin, X, Sparkles, ChevronDown, ChevronUp, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { Spark, BrandLoading } from "@/components/Brand";
-import { FloatingWords } from "@/components/FloatingWords";
+import { Mascot } from "@/components/Mascot";
 import { cn } from "@/lib/cn";
 import { CATEGORY_TO_SLOT, type Category } from "@/lib/constants";
 import type { ClothingItemDTO, OutfitDTO } from "@/lib/clientTypes";
@@ -36,21 +35,18 @@ const ASK_PRESETS = ["Improve this", "More casual", "More formal", "More streetw
 // "Ask matchin'" exists purely as an optional, collapsed-by-default extra
 // that reuses the exact same /api/outfits/generate pipeline every other
 // "ask matchin'" surface uses (no second AI system), never the default path.
+// No useSearchParams() here on purpose — Next.js requires wrapping it in
+// <Suspense>, and the one caller that linked here with a real
+// `?seedOutfit=` param (OutfitCard's "remix in playground") only needs the
+// value once, client-side, to kick off a fetch — reading it directly from
+// window.location inside that effect gets the identical behavior without
+// opting this whole page into Suspense-boundary streaming.
 export default function OutfitPlaygroundPage() {
-  return (
-    <Suspense>
-      <OutfitPlaygroundInner />
-    </Suspense>
-  );
-}
-
-function OutfitPlaygroundInner() {
-  const searchParams = useSearchParams();
-  const seedOutfitId = searchParams.get("seedOutfit");
-
   const [wardrobe, setWardrobe] = useState<ClothingItemDTO[] | null>(null);
   const [picks, setPicks] = useState<Record<string, ClothingItemDTO | null>>({});
-  const [pinnedSlot, setPinnedSlot] = useState<string | null>(null);
+  // Each category pins independently (Section 13.4) — pinning shoes doesn't
+  // stop you from also pinning the top while you keep shuffling bottoms.
+  const [pinnedSlots, setPinnedSlots] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   const [accessoryOpen, setAccessoryOpen] = useState(false);
@@ -69,6 +65,7 @@ function OutfitPlaygroundInner() {
   }, []);
 
   useEffect(() => {
+    const seedOutfitId = new URLSearchParams(window.location.search).get("seedOutfit");
     if (!seedOutfitId) return;
     fetch(`/api/outfits/${seedOutfitId}`)
       .then((r) => (r.ok ? r.json() : null))
@@ -80,7 +77,7 @@ function OutfitPlaygroundInner() {
         }
         setPicks(next);
       });
-  }, [seedOutfitId]);
+  }, []);
 
   const bySlot = useMemo(() => {
     const map: Record<string, ClothingItemDTO[]> = {};
@@ -101,7 +98,12 @@ function OutfitPlaygroundInner() {
   }
 
   function togglePin(slot: string) {
-    setPinnedSlot((cur) => (cur === slot ? null : slot));
+    setPinnedSlots((cur) => {
+      const next = new Set(cur);
+      if (next.has(slot)) next.delete(slot);
+      else next.add(slot);
+      return next;
+    });
   }
 
   function shuffleAll() {
@@ -109,7 +111,7 @@ function OutfitPlaygroundInner() {
     setPicks((prev) => {
       const next: Record<string, ClothingItemDTO | null> = { ...prev };
       for (const slot of activeMainSlots) {
-        if (slot === pinnedSlot) continue;
+        if (pinnedSlots.has(slot)) continue;
         const options = bySlot[slot] ?? [];
         next[slot] = options.length ? options[Math.floor(Math.random() * options.length)] : null;
       }
@@ -140,9 +142,23 @@ function OutfitPlaygroundInner() {
     setAiNote(null);
 
     const currentDescription = filledSlots.map((s) => `${SLOT_LABEL[s]}: ${picks[s]!.name}`).join(", ");
-    const notes = currentDescription
-      ? `The user is currently trying: ${currentDescription}. ${instruction}. Build a complete outfit reflecting this.`
-      : instruction;
+    const pinnedDescription = [...pinnedSlots]
+      .filter((s) => picks[s])
+      .map((s) => `${SLOT_LABEL[s]}: ${picks[s]!.name}`)
+      .join(", ");
+    const notes = [
+      currentDescription ? `The user is currently trying: ${currentDescription}.` : "",
+      pinnedDescription ? `These pieces are pinned and MUST stay exactly as-is: ${pinnedDescription}.` : "",
+      `${instruction}. Build a complete outfit reflecting this.`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    // The underlying pipeline only supports one explicit anchor item — with
+    // several pins, the first one anchors the AI call directly and the rest
+    // are still passed as hard constraints in `notes` above, so nothing
+    // pinned gets silently dropped.
+    const firstPinnedSlot = [...pinnedSlots].find((s) => picks[s]);
 
     const res = await fetch("/api/outfits/generate", {
       method: "POST",
@@ -151,7 +167,7 @@ function OutfitPlaygroundInner() {
         occasion: "Everyday",
         desiredStyle: "Custom",
         notes,
-        anchorItemId: pinnedSlot ? picks[pinnedSlot]?.id : undefined,
+        anchorItemId: firstPinnedSlot ? picks[firstPinnedSlot]?.id : undefined,
       }),
     });
     const data = await res.json();
@@ -192,13 +208,15 @@ function OutfitPlaygroundInner() {
 
   return (
     <div className="max-w-2xl">
-      <div className="relative rounded-2xl bg-graphite text-white p-5 sm:p-6 mb-6">
-        <FloatingWords words={["MIX", "DRAG", "REMIX", "PLAY"]} />
-        <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-2 relative">outfit playground</p>
-        <h1 className="font-display text-2xl sm:text-3xl mb-1.5 relative">mix it yourself.</h1>
-        <p className="text-sm text-white/50 relative max-w-md">
-          Swipe through your real pieces, tap to pick, pin one to lock it in. No AI needed.
-        </p>
+      <div className="relative rounded-2xl bg-graphite atmosphere text-white p-5 sm:p-6 mb-6 flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-2 relative">outfit playground</p>
+          <h1 className="font-display text-2xl sm:text-3xl mb-1.5 relative">mix it yourself.</h1>
+          <p className="text-sm text-white/50 relative max-w-md">
+            Swipe through your real pieces, tap to pick, pin one to lock it in. No AI needed.
+          </p>
+        </div>
+        <Mascot expression={asking ? "thinking" : saved ? "celebratory" : "curious"} size={40} className="shrink-0" />
       </div>
 
       <div className="space-y-5">
@@ -209,7 +227,7 @@ function OutfitPlaygroundInner() {
             items={bySlot[slot] ?? []}
             picked={picks[slot] ?? null}
             onPick={(item) => pick(slot, item)}
-            pinned={pinnedSlot === slot}
+            pinned={pinnedSlots.has(slot)}
             onTogglePin={() => togglePin(slot)}
           />
         ))}
@@ -313,12 +331,15 @@ function OutfitPlaygroundInner() {
                   {asking ? "…" : "Ask"}
                 </Button>
               </div>
-              {pinnedSlot && (
-                <p className="text-xs text-stone mt-2.5">{SLOT_LABEL[pinnedSlot]} is pinned — matchin&apos; will build around it.</p>
+              {pinnedSlots.size > 0 && (
+                <p className="text-xs text-stone mt-2.5">
+                  {[...pinnedSlots].map((s) => SLOT_LABEL[s]).join(", ")} pinned — matchin&apos; will build around{" "}
+                  {pinnedSlots.size === 1 ? "it" : "them"}.
+                </p>
               )}
               {askError && <p className="text-sm text-warning mt-3">{askError}</p>}
               {aiNote && <p className="text-sm text-ink-soft mt-3 leading-relaxed">{aiNote}</p>}
-              <p className="text-xs text-stone mt-3">Asking matchin&apos; uses 1 credit.</p>
+              <p className="text-xs text-stone mt-3">Asking matchin&apos; uses 3 credits.</p>
             </div>
           )}
         </div>
@@ -344,10 +365,22 @@ function OutfitPlaygroundInner() {
   );
 }
 
-// One wardrobe category as a swipeable, tap-to-pick carousel — native
-// horizontal scroll (so it's genuinely touch-swipeable, not a custom
-// pointer-drag reimplementation), each card a real `<button>` so Tab+Enter
-// reaches every alternative without any bespoke keyboard handling.
+// One wardrobe category as an independently swipeable, CENTER-SELECTED
+// carousel — whichever card sits in the horizontal center of its own track
+// is the active pick for that category, full stop. That's genuinely
+// different from "tap any card to select it": the centered card itself
+// IS the selection, continuously, as you drag — matching the reference
+// behaviour (swipe the shoe row to the pair you want, it's already picked
+// once it settles center, no separate tap required).
+//
+// Mobile: native touch-scroll + CSS scroll-snap does the swipe/snap — the
+// browser's own touch handling is smoother and more correct than any
+// custom touch-gesture reimplementation would be. Desktop: a pointer-drag
+// handler (mouse only — touch already has native scrolling, so it's
+// explicitly excluded to avoid fighting the browser's own gesture) adds
+// click-and-drag scrolling, since a bare mouse has no native swipe.
+// Keyboard: the track itself is focusable and scrollable, so ArrowLeft/
+// ArrowRight scroll it natively — no bespoke key handling needed.
 function CategoryRow({
   slot,
   items,
@@ -363,6 +396,130 @@ function CategoryRow({
   pinned: boolean;
   onTogglePin: () => void;
 }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const rafRef = useRef<number | null>(null);
+  const lastAutoSelectedId = useRef<string | null>(null);
+  const drag = useRef<{ startX: number; startScrollLeft: number; moved: boolean } | null>(null);
+
+  // Continuously recompute, every scroll frame, which card is nearest the
+  // track's horizontal center — and imperatively scale/dim every card by
+  // its own distance from center, so the "enlarged center, dimmed
+  // neighbours" look tracks the drag live instead of only after it settles.
+  function recompute() {
+    const track = trackRef.current;
+    if (!track) return;
+    const trackRect = track.getBoundingClientRect();
+    const centerX = trackRect.left + trackRect.width / 2;
+    const half = trackRect.width / 2 || 1;
+
+    let closestId: string | null = null;
+    let closestDist = Infinity;
+
+    for (const [id, el] of cardRefs.current) {
+      const r = el.getBoundingClientRect();
+      const itemCenter = r.left + r.width / 2;
+      const dist = Math.abs(itemCenter - centerX);
+      const t = Math.min(1, dist / half);
+      // Center card: scale 1, full opacity. Edge cards: smaller, dimmed —
+      // never fully invisible, so they still read as "more options here".
+      el.style.transform = `scale(${1 - t * 0.22})`;
+      el.style.opacity = String(1 - t * 0.55);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestId = id;
+      }
+    }
+
+    if (closestId && closestId !== lastAutoSelectedId.current) {
+      lastAutoSelectedId.current = closestId;
+      const item = items.find((i) => i.id === closestId);
+      if (item) onPick(item);
+    }
+  }
+
+  function onScroll() {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(recompute);
+  }
+
+  // Keep the carousel's own scroll position in sync with `picked` when it
+  // changes for a reason OTHER than this row's own scrolling — Shuffle,
+  // loading a seeded outfit, or another row's pin affecting this one.
+  useEffect(() => {
+    if (!picked || picked.id === lastAutoSelectedId.current) return;
+    const el = cardRefs.current.get(picked.id);
+    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "auto" });
+    lastAutoSelectedId.current = picked.id;
+  }, [picked]);
+
+  // Center the initial pick (or the first card) on mount, without an
+  // animated scroll jump. Deliberately does NOT pre-set
+  // `lastAutoSelectedId` — recompute() below needs to see it still unset so
+  // its own closestId check actually fires onPick for whatever ends up
+  // centered, including on this very first call (pre-setting it here made
+  // recompute() think the initial card was "already selected" and skip
+  // calling onPick, leaving the first row visually centered but never
+  // actually marked as the pick).
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const id = picked?.id ?? items[0]?.id;
+    const el = id ? cardRefs.current.get(id) : null;
+    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "auto" });
+    recompute();
+    // Mount-only: re-centering on every `items`/`picked` change would fight
+    // the sync effect above and the user's own in-progress drag.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Window-level listeners (not setPointerCapture, which can throw on some
+  // synthetic/edge-case pointers and isn't actually needed here) so the
+  // drag keeps tracking even if the cursor leaves the track mid-gesture —
+  // standard, robust "click-and-drag to scroll" pattern for desktop mice.
+  //
+  // CSS scroll-snap actively fights a scripted `scrollLeft` assignment: a
+  // native touch/trackpad drag is one continuous OS-level gesture the
+  // browser knows not to snap mid-flight, but each individual scripted
+  // `scrollLeft = x` looks like its own already-finished scroll, so the
+  // snap machinery yanks it straight back to the current snap point on
+  // every single frame — the drag would look completely stuck. The fix is
+  // the standard one: suspend snapping for the span of the drag, restore
+  // it on release so the normal release-to-nearest-card snap still fires.
+  function onPointerDown(e: React.PointerEvent) {
+    if (e.pointerType !== "mouse") return; // touch already scrolls natively
+    const track = trackRef.current;
+    if (!track) return;
+    drag.current = { startX: e.clientX, startScrollLeft: track.scrollLeft, moved: false };
+    track.style.scrollSnapType = "none";
+
+    function handleMove(moveEvent: PointerEvent) {
+      if (!drag.current || !track) return;
+      const dx = moveEvent.clientX - drag.current.startX;
+      if (Math.abs(dx) > 3) drag.current.moved = true;
+      track.scrollLeft = drag.current.startScrollLeft - dx;
+    }
+    function handleUp() {
+      drag.current = null;
+      if (track) track.style.scrollSnapType = "";
+      window.removeEventListener("pointermove", handleMove);
+      window.removeEventListener("pointerup", handleUp);
+    }
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
+  }
+
+  function onCardClick(item: ClothingItemDTO, e: React.MouseEvent) {
+    // A real drag that happened to end over a card shouldn't also "click"
+    // it — only treat this as a deliberate tap-to-jump when nothing moved.
+    if (drag.current?.moved) {
+      e.preventDefault();
+      return;
+    }
+    const el = cardRefs.current.get(item.id);
+    el?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }
+
   if (items.length === 0) {
     return (
       <Link
@@ -390,19 +547,38 @@ function CategoryRow({
           </button>
         )}
       </div>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 snap-x snap-mandatory scroll-px-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div
+        ref={trackRef}
+        onScroll={onScroll}
+        onPointerDown={onPointerDown}
+        tabIndex={0}
+        role="listbox"
+        aria-label={`${SLOT_LABEL[slot]} options — the centered item is selected`}
+        className="flex items-center gap-3 overflow-x-auto overscroll-x-contain pb-1 pt-2 snap-x snap-mandatory touch-pan-x cursor-grab active:cursor-grabbing select-none"
+      >
+        {/* Real spacer flex-children (not negative-margin/padding on the
+            track itself) sized to exactly half a card short of center, so
+            the FIRST and LAST cards can still scroll all the way to the
+            middle — a plain, predictable box model instead of percentage
+            padding on an auto-width flex item, which produced a genuinely
+            broken clientWidth/scrollWidth relationship when tried here. */}
+        <div className="shrink-0 w-[calc(50%_-_68px)] sm:w-[calc(50%_-_76px)]" aria-hidden />
         {items.map((item) => {
           const active = picked?.id === item.id;
           return (
-            <button
+            <div
               key={item.id}
-              onClick={() => onPick(item)}
-              className={cn(
-                "relative shrink-0 snap-start w-28 sm:w-32 aspect-[4/5] rounded-xl overflow-hidden border-2 transition-colors cursor-pointer",
-                active ? "border-lime" : "border-line hover:border-ink/30"
-              )}
+              ref={(el) => {
+                if (el) cardRefs.current.set(item.id, el);
+                else cardRefs.current.delete(item.id);
+              }}
+              role="option"
+              aria-selected={active}
+              onClick={(e) => onCardClick(item, e)}
+              className="relative shrink-0 snap-center w-28 sm:w-32 aspect-[4/5] rounded-xl overflow-hidden border-2 transition-[border-color,transform,opacity] duration-150 ease-out cursor-pointer"
+              style={{ transform: "scale(1)", opacity: 1, borderColor: active ? "var(--lime)" : "var(--line)" }}
             >
-              <Image src={item.imageUrl} alt={item.name} fill sizes="128px" className="object-cover" />
+              <Image src={item.imageUrl} alt={item.name} fill sizes="128px" draggable={false} className="object-cover pointer-events-none" />
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-ink/70 to-transparent px-2 py-1.5">
                 <p className="text-white text-[11px] font-medium truncate">{item.name}</p>
               </div>
@@ -416,9 +592,10 @@ function CategoryRow({
                   <Pin className="h-2.5 w-2.5" />
                 </span>
               )}
-            </button>
+            </div>
           );
         })}
+        <div className="shrink-0 w-[calc(50%_-_68px)] sm:w-[calc(50%_-_76px)]" aria-hidden />
       </div>
     </div>
   );

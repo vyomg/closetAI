@@ -13,10 +13,8 @@ import {
   UserCircle,
   Settings,
   LogOut,
-  Crown,
   BarChart3,
   Boxes,
-  Trophy,
   CalendarDays,
   MessageSquareHeart,
   MessageCircle,
@@ -25,6 +23,7 @@ import {
   Bell,
   BookmarkIcon,
   Image as ImageIcon,
+  Coins,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Brand, Spark } from "@/components/Brand";
@@ -73,7 +72,6 @@ const GROUPS: { label: string; links: { href: string; label: string; icon: Lucid
   {
     label: "More",
     links: [
-      { href: "/outfits/challenges", label: "Challenges", icon: Trophy },
       { href: "/wardrobe/stats", label: "Wardrobe Stats", icon: BarChart3 },
       { href: "/wardrobe/capsule", label: "Capsule Wardrobe", icon: Boxes },
       { href: "/ask-a-friend", label: "Ask a Friend", icon: MessageSquareHeart },
@@ -83,10 +81,9 @@ const GROUPS: { label: string; links: { href: string; label: string; icon: Lucid
   },
 ];
 
-// "/outfits" also has its own distinct nav entries for sub-routes
-// (Outfit Playground, Challenges), so — like "/dashboard" — it needs an
-// exact match rather than a prefix match, or both "Outfits" and whichever
-// sub-route is open would light up at once.
+// "/outfits" also has its own distinct nav entry for "/outfits/playground",
+// so — like "/dashboard" — it needs an exact match rather than a prefix
+// match, or both "Outfits" and "Outfit Playground" would light up at once.
 const EXACT_ONLY = new Set(["/dashboard", "/outfits"]);
 
 function isActivePath(pathname: string, href: string) {
@@ -98,6 +95,7 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
   const createActive = isActivePath(pathname, "/outfits/create");
   const [unreadCount, setUnreadCount] = useState(0);
   const [credits, setCredits] = useState<number | null>(null);
+  const [unlimitedCredits, setUnlimitedCredits] = useState(false);
 
   useEffect(() => {
     fetch("/api/notifications?filter=unread")
@@ -106,7 +104,10 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
       .catch(() => {});
     fetch("/api/credits")
       .then((r) => r.json())
-      .then((d) => setCredits(typeof d.balance === "number" ? d.balance : null))
+      .then((d) => {
+        setCredits(typeof d.balance === "number" ? d.balance : null);
+        setUnlimitedCredits(Boolean(d.unlimited));
+      })
       .catch(() => {});
   }, [pathname]);
 
@@ -117,6 +118,7 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
         <Link
           href="/notifications"
           aria-label="Notifications"
+          prefetch={false}
           className="relative shrink-0 rounded-full p-1.5 text-white/50 hover:text-white hover:bg-white/10 transition-colors"
         >
           <Bell className="h-4 w-4" strokeWidth={1.75} />
@@ -145,12 +147,13 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
         <div className="px-3.5 mb-5">
           <Link
             href="/settings"
+            prefetch={false}
             className="flex items-center justify-between rounded-xl bg-white/5 px-3.5 py-2 text-xs text-white/60 hover:bg-white/10 transition-colors"
           >
             <span className="flex items-center gap-1.5">
               <Spark className="h-3 w-3 text-lime" /> Credits
             </span>
-            <span className="font-medium text-white">{credits}</span>
+            <span className="font-medium text-white">{unlimitedCredits ? "∞" : credits}</span>
           </Link>
         </div>
       )}
@@ -166,6 +169,7 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
                 <Link
                   key={link.href}
                   href={link.href}
+                  prefetch={false}
                   className={cn(
                     "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-colors",
                     active ? "bg-white/10 text-white font-medium" : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -183,14 +187,15 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
 
       <div className="px-3.5 pb-5 pt-3 border-t border-white/10">
         <Link
-          href="/premium"
+          href="/buy-credits"
+          prefetch={false}
           className={cn(
             "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-colors mb-3",
-            isActivePath(pathname, "/premium") ? "bg-white/10 text-white font-medium" : "text-white/50 hover:bg-white/5 hover:text-white"
+            isActivePath(pathname, "/buy-credits") ? "bg-white/10 text-white font-medium" : "text-white/50 hover:bg-white/5 hover:text-white"
           )}
         >
-          <Crown className="h-[18px] w-[18px]" strokeWidth={1.75} />
-          Premium
+          <Coins className="h-[18px] w-[18px]" strokeWidth={1.75} />
+          Buy Credits
         </Link>
 
         <div className="flex items-center gap-2.5 px-3.5 py-2">

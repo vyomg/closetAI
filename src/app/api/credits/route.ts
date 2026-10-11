@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { UNLIMITED_CREDITS } from "@/lib/credits";
 
 export async function GET() {
   const session = await auth();
@@ -18,6 +19,7 @@ export async function GET() {
 
   return NextResponse.json({
     balance: user.creditBalance,
+    unlimited: UNLIMITED_CREDITS,
     transactions: transactions.map((t) => ({ id: t.id, amount: t.amount, reason: t.reason, createdAt: t.createdAt })),
   });
 }

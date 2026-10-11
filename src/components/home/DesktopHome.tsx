@@ -3,7 +3,6 @@ import Image from "next/image";
 import { Plus, Luggage, Wand2, ShoppingBag, ArrowRight } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { Spark } from "@/components/Brand";
-import { FloatingWords } from "@/components/FloatingWords";
 import { DashboardStats } from "@/components/DashboardStats";
 import { WeatherLine } from "@/components/home/WeatherLine";
 import { StyleProfileNudge } from "@/components/home/StyleProfileNudge";
@@ -19,9 +18,8 @@ export function DesktopHome({ data }: { data: HomeData }) {
       {!hasAppearanceProfile && <StyleProfileNudge />}
 
       {/* Hero + weather merged into one dark card — matchin's "today's match" moment. */}
-      <div className="rounded-2xl bg-graphite text-white p-8 flex items-center justify-between gap-8 mb-10">
+      <div className="rounded-2xl bg-graphite atmosphere text-white p-8 flex items-center justify-between gap-8 mb-10">
         <div className="relative flex-1 min-w-0">
-          <FloatingWords words={["STYLE", "MATCH", "FIT", "WEAR"]} />
           <p className="text-white/40 mb-1 lowercase">
             {greeting().toLowerCase()}, {firstName}.
           </p>

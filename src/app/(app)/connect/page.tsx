@@ -6,7 +6,6 @@ import { Spark } from "@/components/Brand";
 import { Chip } from "@/components/ui/Chip";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Field";
-import { FloatingWords } from "@/components/FloatingWords";
 import { CONTACT } from "@/lib/contact";
 
 const CATEGORIES = [
@@ -43,8 +42,7 @@ export default function ConnectPage() {
 
   return (
     <div className="max-w-2xl">
-      <div className="relative rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-8">
-        <FloatingWords words={["HEY", "✦", "TALK", "US"]} />
+      <div className="relative rounded-2xl bg-graphite atmosphere text-white p-6 sm:p-8 mb-8">
         <h1 className="font-display text-3xl sm:text-4xl mb-2 relative flex items-center gap-2">
           connect with us <Spark className="h-5 w-5 text-lime" />
         </h1>
@@ -64,13 +62,13 @@ export default function ConnectPage() {
           icon={<Mail className="h-4 w-4" />}
           label="Email"
           sub="Send us a message"
-          href={CONTACT.email ? `mailto:${CONTACT.email}` : null}
+          href={CONTACT.email ? `mailto:${CONTACT.email}?subject=${encodeURIComponent("Matchin Enquiry")}` : null}
         />
         <ContactCard
           icon={<AtSign className="h-4 w-4" />}
           label="Instagram"
           sub="Follow matchin'"
-          href={CONTACT.instagramHandle ? `https://instagram.com/${CONTACT.instagramHandle}` : null}
+          href={CONTACT.instagramHandle ? `https://www.instagram.com/${CONTACT.instagramHandle}/` : null}
         />
       </div>
 

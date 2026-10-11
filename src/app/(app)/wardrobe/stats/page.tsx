@@ -85,7 +85,7 @@ export default function WardrobeStatsPage() {
         <section>
           <h2 className="font-display text-2xl mb-4">Never worn</h2>
           {stats.neverWorn.length === 0 ? (
-            <p className="text-sm text-stone">Everything's had at least one outing.</p>
+            <p className="text-sm text-stone">Everything&apos;s had at least one outing.</p>
           ) : (
             <ItemGrid items={stats.neverWorn.slice(0, 8)} />
           )}
@@ -137,7 +137,7 @@ export default function WardrobeStatsPage() {
         <section className="rounded-2xl bg-paper-alt p-5">
           <p className="text-sm font-medium mb-1">Wardrobe gaps</p>
           <p className="text-sm text-stone">
-            You don't own any {stats.missingCategories.join(", ").toLowerCase()} yet.{" "}
+            You don&apos;t own any {stats.missingCategories.join(", ").toLowerCase()} yet.{" "}
             <Link href="/buy" className="underline underline-offset-4">
               See shopping recommendations
             </Link>

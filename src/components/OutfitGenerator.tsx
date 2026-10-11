@@ -249,7 +249,7 @@ export function OutfitGenerator({
               <Sparkles className="h-4 w-4 mr-1.5" /> Surprise Me
             </Button>
           </div>
-          <p className="text-xs text-stone">Uses 1 credit</p>
+          <p className="text-xs text-stone">Uses 3 credits</p>
 
           {error && <p className="text-sm text-warning">{error}</p>}
         </div>
@@ -288,7 +288,7 @@ function IdleState() {
     <div className="h-full min-h-[420px] rounded-2xl border border-dashed border-line flex items-center justify-center text-center p-10">
       <div>
         <p className="font-display text-2xl mb-2">Your outfit will appear here.</p>
-        <p className="text-stone text-sm">Set your preferences and let matchin' style something from your wardrobe.</p>
+        <p className="text-stone text-sm">Set your preferences and let matchin&apos; style something from your wardrobe.</p>
       </div>
     </div>
   );

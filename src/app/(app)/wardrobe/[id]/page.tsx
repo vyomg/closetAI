@@ -195,7 +195,7 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
             <div className="mb-6 rounded-xl bg-warning/15 px-4 py-3 text-sm text-warning flex gap-2">
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
               <span>
-                The AI wasn't fully confident about: {item.uncertainFields.join(", ")}. Please review and correct
+                The AI wasn&apos;t fully confident about: {item.uncertainFields.join(", ")}. Please review and correct
                 below.
               </span>
             </div>
@@ -323,7 +323,14 @@ export default function ClothingDetailPage({ params }: { params: Promise<{ id: s
 
 function OccasionsEditor({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
   const [text, setText] = useState(value.join(", "));
-  useEffect(() => setText(value.join(", ")), [value]);
+  // Resync when `value` changes identity (e.g. a fresh fetch after save) —
+  // adjusted during render rather than in an effect, per React's guidance
+  // on deriving state from props without an extra render tick.
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setText(value.join(", "));
+  }
   return (
     <Input
       value={text}

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Camera, Clock } from "lucide-react";
 import { LinkButton } from "@/components/ui/Button";
 import { BrandLoading, Spark } from "@/components/Brand";
-import { FloatingWords } from "@/components/FloatingWords";
 
 // Virtual Try-On is intentionally NOT implemented — it requires an
 // image-generation model and this product deliberately stays on Gemini for
@@ -29,8 +28,7 @@ export default function TryOnPage() {
 
   return (
     <div className="max-w-lg">
-      <div className="relative rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-8">
-        <FloatingWords words={["SOON", "SEE", "YOU", "✦"]} />
+      <div className="relative rounded-2xl bg-graphite atmosphere text-white p-6 sm:p-8 mb-8">
         <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-3 relative">virtual try-on</p>
         <h1 className="font-display text-3xl sm:text-4xl mb-2 relative">coming soon.</h1>
         <p className="text-sm text-white/50 relative max-w-md">

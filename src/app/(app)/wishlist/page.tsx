@@ -6,8 +6,7 @@ import Image from "next/image";
 import { Bookmark, Plus, X, Trash2, ExternalLink, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select, Textarea } from "@/components/ui/Field";
-import { BrandLoading, Spark } from "@/components/Brand";
-import { FloatingWords } from "@/components/FloatingWords";
+import { BrandLoading } from "@/components/Brand";
 import { CATEGORY_LIST } from "@/lib/constants";
 
 type WishlistItemDTO = {
@@ -47,8 +46,7 @@ export default function WishlistPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="relative rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-8">
-        <FloatingWords words={["WANT", "SAVE", "NEXT", "✦"]} />
+      <div className="relative rounded-2xl bg-graphite atmosphere text-white p-6 sm:p-8 mb-8">
         <div className="flex items-center justify-between gap-4 flex-wrap relative">
           <div>
             <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-3">wishlist</p>

@@ -28,7 +28,6 @@ export function MatchinWheel({
   const dragging = useRef(false);
   const samples = useRef<PointerSample[]>([]);
   const startAngleOffset = useRef(0);
-  const rafId = useRef<number | null>(null);
 
   const n = segments.length;
   const anglePer = 360 / n;

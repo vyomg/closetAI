@@ -59,7 +59,7 @@ export function PersonalAppearanceReview({
       <div className="rounded-2xl border border-line bg-paper-alt p-5">
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="h-4 w-4 text-ink-soft" strokeWidth={1.75} />
-          <p className="font-medium text-sm">What matchin' noticed</p>
+          <p className="font-medium text-sm">What matchin&apos; noticed</p>
         </div>
         <div className="space-y-3 text-sm text-ink-soft">
           {profile.bodyProportionNotes && (
@@ -137,7 +137,7 @@ export function PersonalAppearanceReview({
           <div>
             <p className="text-sm font-medium">Your profile is ready.</p>
             <p className="text-xs text-stone mt-0.5">
-              Delete the original photo now? You can keep it if you'd like to re-analyze later without re-uploading.
+              Delete the original photo now? You can keep it if you&apos;d like to re-analyze later without re-uploading.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={deletePhoto} disabled={deleting} className="shrink-0">

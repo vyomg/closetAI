@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LinkButton } from "@/components/ui/Button";
 import { Brand, Spark } from "@/components/Brand";
+import { Mascot, MascotSparkField } from "@/components/Mascot";
 import { StoreBadges } from "@/components/StoreBadges";
 import { MatchinWheel } from "@/components/MatchinWheel";
 import { ArrowRight } from "lucide-react";
@@ -39,6 +40,10 @@ export default function LandingPage() {
         </header>
 
         <section className="mx-auto max-w-6xl px-5 sm:px-6 pt-10 pb-20 sm:pt-16 sm:pb-28 text-center">
+          <div className="relative inline-block mb-6 animate-fade-up">
+            <MascotSparkField className="absolute -inset-10" />
+            <Mascot expression="welcoming" size={72} />
+          </div>
           <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-5 animate-fade-up">your wardrobe, matched</p>
           <h1 className="font-display text-[15vw] leading-[0.92] sm:text-7xl lg:text-8xl tracking-tight uppercase animate-fade-up">
             your wardrobe.
@@ -71,6 +76,7 @@ export default function LandingPage() {
 
           {landed && (
             <div className="mt-10 animate-fade-up">
+              <Mascot expression="excited" size={44} className="mx-auto mb-3" />
               <p className="text-xs tracking-[0.2em] uppercase text-white/40 mb-1">you landed on</p>
               <p className="font-display text-2xl text-lime mb-6">{landed}</p>
 
@@ -174,7 +180,7 @@ export default function LandingPage() {
       {/* ===== FINAL CTA (dark) ===== */}
       <section className="bg-ink text-white">
         <div className="mx-auto max-w-6xl px-5 sm:px-6 py-24 sm:py-32 text-center">
-          <Spark className="h-9 w-9 mx-auto mb-7 text-lime" />
+          <Mascot expression="excited" size={56} className="mx-auto mb-7" />
           <h2 className="font-display text-4xl sm:text-6xl uppercase tracking-tight mb-6 leading-[0.95]">
             let&apos;s match.
           </h2>

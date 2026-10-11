@@ -26,8 +26,9 @@ export function LoaferIcon(props: SVGProps<SVGSVGElement>) {
 export function BootIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
-      <path d="M5 21V8.5c0-1 .7-1.7 1.7-1.7h2.6l1.9 1.9h3.1c2 0 3.2 1.1 3.6 3l.4 1.8c1.5.3 2.2 1.5 2.2 3.1V21H5Z" />
-      <path d="M5 16.5h16" />
+      <path d="M6.5 21V5c0-.8.6-1.4 1.4-1.4h1.7c.8 0 1.4.6 1.4 1.4v5.8h2.4c2.8 0 4.6 1.5 4.6 4.2V21H6.5Z" />
+      <path d="M6.5 17.3h11.5" />
+      <path d="M9 7.3h2" />
     </svg>
   );
 }
@@ -35,8 +36,8 @@ export function BootIcon(props: SVGProps<SVGSVGElement>) {
 export function FormalShoeIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
-      <path d="M3 19c0-3.3 1.6-5.3 5.2-6.5l5.6-2.7c1.4-.7 3-.3 4 .9l1.8 2.2c.5.6 1.2 1 2 1.2.9.2 1.4 1 1.4 2v3H3Z" />
-      <path d="M9.5 13.2 11 14.5M12.5 11.7 14 13" />
+      <path d="M2.5 19.3c0-3.1 1.5-5 4.9-6.1l5.3-2.5c1.3-.6 2.8-.3 3.7.9l1.7 2.1c.5.6 1.1.9 1.9 1.1.8.2 1.3.9 1.3 1.8v2.7H2.5Z" />
+      <path d="M8 14 10.5 15.5M10.5 12.3 13 13.8" />
     </svg>
   );
 }

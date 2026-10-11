@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Label, Textarea } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
 import { OCCASIONS } from "@/lib/constants";
+import { cn } from "@/lib/cn";
 import type { ClothingItemDTO, WeatherDTO } from "@/lib/clientTypes";
 
 type PackResult = {
@@ -18,10 +19,31 @@ type PackResult = {
   worthBuying: { category: string; subcategory: string; suggestedColor: string; reason: string; overallScore: number }[];
 };
 
+// Local YYYY-MM-DD, not UTC — toISOString() shifts by the browser's
+// timezone offset and can silently roll the date back a day.
+function toDateInputValue(d: Date) {
+  const tzOffsetMs = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+}
+
+const DEFAULT_DEPARTURE = toDateInputValue(new Date(Date.now() + 7 * 86400000));
+const DEFAULT_RETURN = toDateInputValue(new Date(Date.now() + 12 * 86400000));
+
+// Trip length convention: departure and return are both travel days —
+// returning the same day you leave is a 1-day trip, not 0 — so duration is
+// inclusive of both ends. Shown next to the dates so it's never ambiguous.
+function tripDurationDays(startDate: string, endDate: string): number {
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T00:00:00`);
+  const diff = Math.round((end.getTime() - start.getTime()) / 86400000);
+  return Math.max(1, diff + 1);
+}
+
 export default function PackPage() {
   const router = useRouter();
   const [destination, setDestination] = useState("");
-  const [days, setDays] = useState(5);
+  const [departureDate, setDepartureDate] = useState(DEFAULT_DEPARTURE);
+  const [returnDate, setReturnDate] = useState(DEFAULT_RETURN);
   const [weatherNotes, setWeatherNotes] = useState("");
   const [occasions, setOccasions] = useState<string[]>(["Casual"]);
   const [loading, setLoading] = useState(false);
@@ -29,15 +51,23 @@ export default function PackPage() {
   const [result, setResult] = useState<PackResult | null>(null);
   const [saving, setSaving] = useState(false);
 
+  const days = tripDurationDays(departureDate, returnDate);
+  const datesInvalid = returnDate < departureDate;
+
+  function handleDepartureChange(value: string) {
+    setDepartureDate(value);
+    // Keep the return date from silently becoming "before departure" when
+    // the user drags departure past it — nudge it forward instead of
+    // letting an invalid range sit there unexplained.
+    if (returnDate < value) setReturnDate(value);
+  }
+
   async function saveTrip() {
     setSaving(true);
-    const today = new Date();
-    const startDate = today.toISOString().slice(0, 10);
-    const endDate = new Date(today.getTime() + days * 86400000).toISOString().slice(0, 10);
     const res = await fetch("/api/trips", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destination, startDate, endDate, occasions: occasions.slice(0, 5) }),
+      body: JSON.stringify({ destination, startDate: departureDate, endDate: returnDate, occasions: occasions.slice(0, 5) }),
     });
     const data = await res.json();
     setSaving(false);
@@ -50,13 +80,17 @@ export default function PackPage() {
       setError("Tell us where you're headed first.");
       return;
     }
+    if (datesInvalid) {
+      setError("Your return date can't be before your departure date.");
+      return;
+    }
     setLoading(true);
     setError(null);
     setResult(null);
     const res = await fetch("/api/pack/generate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ destination, days, weatherNotes, occasions }),
+      body: JSON.stringify({ destination, days, departureDate, returnDate, weatherNotes, occasions }),
     });
     const data = await res.json();
     setLoading(false);
@@ -71,7 +105,7 @@ export default function PackPage() {
     <div>
       <h1 className="font-display text-4xl mb-2">Pack for a Trip</h1>
       <p className="text-stone mb-10 max-w-xl">
-        Tell matchin' where you're headed and it'll build a minimal, versatile capsule from your
+        Tell matchin&apos; where you&apos;re headed and it&apos;ll build a minimal, versatile capsule from your
         wardrobe.
       </p>
 
@@ -82,14 +116,31 @@ export default function PackPage() {
             <Input value={destination} onChange={(e) => setDestination(e.target.value)} placeholder="e.g. Dubai" />
           </div>
           <div>
-            <Label>Number of days</Label>
-            <Input
-              type="number"
-              min={1}
-              max={60}
-              value={days}
-              onChange={(e) => setDays(Number(e.target.value))}
-            />
+            <Label>Trip dates</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-xs text-stone mb-1 block">Departure</span>
+                <Input
+                  type="date"
+                  value={departureDate}
+                  onChange={(e) => handleDepartureChange(e.target.value)}
+                />
+              </div>
+              <div>
+                <span className="text-xs text-stone mb-1 block">Return</span>
+                <Input
+                  type="date"
+                  value={returnDate}
+                  min={departureDate}
+                  onChange={(e) => setReturnDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <p className={cn("text-xs mt-2", datesInvalid ? "text-warning" : "text-stone")}>
+              {datesInvalid
+                ? "Return date can't be before departure."
+                : `${days} day${days === 1 ? "" : "s"} — departure and return both count as travel days.`}
+            </p>
           </div>
           <div>
             <Label>Weather / season notes</Label>
@@ -104,7 +155,7 @@ export default function PackPage() {
             <Label>Occasions on this trip</Label>
             <StyleSelector options={OCCASIONS} selected={occasions} onChange={setOccasions} />
           </div>
-          <Button size="lg" onClick={generate} disabled={loading} className="w-full">
+          <Button size="lg" onClick={generate} disabled={loading || datesInvalid} className="w-full">
             {loading ? "Packing your bag…" : "Build Packing List"}
           </Button>
           {error && <p className="text-sm text-warning">{error}</p>}

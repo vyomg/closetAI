@@ -11,8 +11,8 @@ import { ImportanceScale } from "@/components/ImportanceScale";
 import { PersonalAppearanceUpload } from "@/components/PersonalAppearanceUpload";
 import { PersonalAppearanceReview } from "@/components/PersonalAppearanceReview";
 import { BrandPicker } from "@/components/BrandPicker";
-import { Spark, MatchinAvatar } from "@/components/Brand";
-import { FloatingWords } from "@/components/FloatingWords";
+import { Spark } from "@/components/Brand";
+import { Mascot } from "@/components/Mascot";
 import { HeightUnitInput, type HeightUnit } from "@/components/HeightUnitInput";
 import { LoaferIcon, BootIcon, FormalShoeIcon, SandalIcon } from "@/components/icons/FootwearIcons";
 import { cn } from "@/lib/cn";
@@ -40,29 +40,6 @@ const FOOTWEAR_ICON: Record<string, React.ComponentType<{ className?: string }>>
   Boots: BootIcon,
   "Formal shoes": FormalShoeIcon,
   Sandals: SandalIcon,
-};
-
-// Floating decorative word-set per step — the same restrained treatment
-// (position, size, opacity, animation) as the welcome/review screens,
-// applied to every step rather than just the first one. A QA pass flagged
-// a one-off "greedy" accent on a single screen as inconsistent — this bank
-// is the fix: one word-list per step, always rendered through the same
-// <FloatingWords> component.
-const STEP_WORDS: Record<string, string[]> = {
-  nickname: ["HEY", "YOU", "✦", "NICE"],
-  shopFor: ["FIT", "SCOPE", "✦", "YOU"],
-  intent: ["WHY", "HERE", "✦", "GOAL"],
-  vibe: ["VIBE", "MOOD", "✦", "YOU"],
-  usualClothing: ["DAILY", "WEAR", "✦", "YOU"],
-  occasions: ["WHEN", "WHERE", "✦", "GO"],
-  fitHeight: ["FIT", "TRUE", "✦", "YOU"],
-  colors: ["HUE", "TONE", "✦", "LOVE"],
-  footwear: ["STEP", "WALK", "✦", "SOLE"],
-  brands: ["LABEL", "LOVE", "✦", "PICK"],
-  swipe: ["SWIPE", "YES", "NO", "✦"],
-  adventurousness: ["BOLD", "SAFE", "✦", "PUSH"],
-  importance: ["WHAT", "MATTERS", "✦", "YOU"],
-  photo: ["SHAPE", "YOU", "✦", "TRUE"],
 };
 
 type StyleReaction = { style: string; fit: string; primaryColor: string; formality: number; category: string; reaction: "like" | "dislike" };
@@ -120,6 +97,7 @@ const STEPS = [
   "nickname",
   "shopFor",
   "intent",
+  "styleIntro",
   "vibe",
   "usualClothing",
   "occasions",
@@ -127,6 +105,7 @@ const STEPS = [
   "colors",
   "footwear",
   "brands",
+  "swipeIntro",
   "swipe",
   "adventurousness",
   "importance",
@@ -141,6 +120,7 @@ export default function OnboardingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [appearanceProfile, setAppearanceProfile] = useState<PersonalAppearanceProfileDTO | null>(null);
   const [swipeIndex, setSwipeIndex] = useState(0);
+  const [lastSwipeReaction, setLastSwipeReaction] = useState<"like" | "dislike" | null>(null);
 
   const step = STEPS[stepIndex];
   const totalSteps = STEPS.length;
@@ -169,6 +149,7 @@ export default function OnboardingPage() {
       ...data.styleReactions,
       { style: card.style, fit: card.fit, primaryColor: card.primaryColor, formality: card.formality, category: card.category, reaction },
     ]);
+    setLastSwipeReaction(reaction);
     if (swipeIndex < swipeDeck.length - 1) {
       setSwipeIndex((i) => i + 1);
     } else {
@@ -218,8 +199,7 @@ export default function OnboardingPage() {
   return (
     <div
       className={cn(
-        "theme-dark-app bg-paper text-ink flex-1 flex items-start sm:items-center justify-center px-6 py-14 relative overflow-hidden",
-        "bg-[radial-gradient(ellipse_70%_50%_at_8%_-8%,rgba(215,255,63,0.10),transparent_60%),radial-gradient(ellipse_60%_45%_at_96%_108%,rgba(61,92,140,0.16),transparent_62%)]"
+        "theme-dark-app bg-paper atmosphere text-ink flex-1 flex items-start sm:items-center justify-center px-6 py-14 relative overflow-hidden"
       )}
     >
       <div className="w-full max-w-xl animate-fade-up relative">
@@ -229,22 +209,11 @@ export default function OnboardingPage() {
           ))}
         </div>
 
-        {/* One consistent floating-word treatment for every step that uses
-            the generic <Step> wrapper — welcome/review/swipe render their
-            own since they don't use that wrapper. Fixes a QA finding where
-            a one-off decorative word appeared on a single onboarding screen
-            and nowhere else: this applies the same word-bank, position and
-            animation to the whole flow instead of one page. The wrapper
-            spans the full step body (not just the title) so the words have
-            real space to float in, matching how welcome/review position
-            theirs against their own content height. */}
         <div className="relative">
-          {STEP_WORDS[step] && <FloatingWords words={STEP_WORDS[step]} />}
 
         {step === "welcome" && (
           <div className="relative animate-fade-in text-center py-6">
-            <FloatingWords words={["MATCH", "FIT", "YOU", "✦"]} />
-            <MatchinAvatar className="h-10 w-10 text-lime mx-auto mb-6" />
+            <Mascot expression="welcoming" size={48} className="mx-auto mb-6" />
             <h1 className="font-display text-3xl mb-3 leading-tight lowercase relative">hi, i&apos;m matchin&apos;.</h1>
             <p className="text-sm text-stone mb-8 max-w-sm mx-auto relative">
               Think of me as your most honest, stylish friend — the one who actually knows your closet. A few quick things
@@ -332,6 +301,18 @@ export default function OnboardingPage() {
               })}
             </div>
           </Step>
+        )}
+
+        {step === "styleIntro" && (
+          <IntroScreen
+            title="now let's talk style."
+            body="A few quick taps and matchin' starts building your Style DNA — the thing every outfit suggestion runs through."
+            items={[
+              { icon: Sparkles, label: "Your vibe" },
+              { icon: ShoppingBag, label: "What you wear" },
+              { icon: Shuffle, label: "Fit & colour" },
+            ]}
+          />
         )}
 
         {step === "vibe" && (
@@ -469,8 +450,25 @@ export default function OnboardingPage() {
           </Step>
         )}
 
+        {step === "swipeIntro" && (
+          <IntroScreen
+            title="now, teach me your taste."
+            body="I'll show you real outfits — swipe right if you'd actually wear it, left if you wouldn't. No wrong answers, just data matchin' learns from."
+            items={[
+              { icon: ThumbsDown, label: "Not for me" },
+              { icon: ThumbsUp, label: "I'd wear it" },
+            ]}
+          />
+        )}
+
         {step === "swipe" && (
           <div className="animate-fade-in">
+            <Mascot
+              key={`${swipeIndex}-${lastSwipeReaction}`}
+              expression={lastSwipeReaction === "like" ? "happy" : lastSwipeReaction === "dislike" ? "thoughtful" : "curious"}
+              size={36}
+              className="mb-3"
+            />
             <h1 className="font-display text-3xl mb-2 leading-tight lowercase">right if you&apos;d wear it.</h1>
             <p className="text-sm text-stone mb-8">Left if you wouldn&apos;t. {swipeDeck.length - swipeIndex} left.</p>
             <div className="relative mx-auto max-w-xs">
@@ -549,8 +547,7 @@ export default function OnboardingPage() {
 
         {step === "review" && (
           <div className="relative animate-fade-in text-center py-6">
-            <FloatingWords words={["READY", "YOU", "✦", "GO"]} />
-            <MatchinAvatar className="h-10 w-10 text-lime mx-auto mb-6" />
+            <Mascot expression="celebratory" size={48} className="mx-auto mb-6" />
             <h1 className="font-display text-3xl mb-3 leading-tight lowercase relative">
               {appearanceProfile ? "your personal style profile" : "that's it" }{data.nickname ? `, ${data.nickname}.` : "."}
             </h1>
@@ -594,6 +591,38 @@ export default function OnboardingPage() {
           </div>
         )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// A short, mascot-led interstitial dropped between onboarding sections —
+// not a form step, just a beat of "here's what's next and why" so the
+// survey doesn't read as one undifferentiated question list. Reuses the
+// same Back/Continue footer as every other step (see hideGenericNav).
+function IntroScreen({
+  title,
+  body,
+  items,
+}: {
+  title: string;
+  body: string;
+  items: { icon: React.ComponentType<{ className?: string }>; label: string }[];
+}) {
+  return (
+    <div className="relative animate-fade-in text-center py-6">
+      <Mascot expression="curious" size={48} className="mx-auto mb-6" />
+      <h1 className="font-display text-3xl mb-3 leading-tight lowercase relative">{title}</h1>
+      <p className="text-sm text-stone mb-8 max-w-sm mx-auto relative">{body}</p>
+      <div className="flex items-center justify-center gap-4">
+        {items.map(({ icon: Icon, label }, i) => (
+          <div key={i} className="flex flex-col items-center gap-2 animate-fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+            <span className="h-11 w-11 rounded-full bg-paper-alt border border-line flex items-center justify-center text-ink-soft">
+              <Icon className="h-4.5 w-4.5" />
+            </span>
+            <span className="text-xs text-stone">{label}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

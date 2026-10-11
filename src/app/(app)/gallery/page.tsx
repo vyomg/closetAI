@@ -5,7 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ImageOff, Sparkles } from "lucide-react";
 import { BrandLoading } from "@/components/Brand";
-import { FloatingWords } from "@/components/FloatingWords";
 import { cn } from "@/lib/cn";
 import type { ClothingItemDTO } from "@/lib/clientTypes";
 
@@ -27,8 +26,7 @@ export default function GalleryPage() {
 
   return (
     <div className="max-w-5xl">
-      <div className="relative rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-8">
-        <FloatingWords words={["LOOK", "SAVE", "YOU", "✦"]} />
+      <div className="relative rounded-2xl bg-graphite atmosphere text-white p-6 sm:p-8 mb-8">
         <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-3 relative">gallery</p>
         <h1 className="font-display text-3xl sm:text-4xl mb-2 relative">every photo in one place.</h1>
         <p className="text-sm text-white/50 relative max-w-md">Every wardrobe photo you&apos;ve uploaded, all together.</p>

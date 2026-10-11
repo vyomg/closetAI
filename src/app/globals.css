@@ -43,6 +43,29 @@
   --warning: #f2a35f;
 }
 
+/* ============================================
+   One continuous atmospheric wash for dark hero
+   surfaces — replaces the old per-corner radial
+   glows + floating decorative words (both read as
+   "four isolated blobs" / clipped text rather than
+   one premium background). A single diagonal pair
+   of oversized, heavily-faded gradients (lime from
+   above, a cool undertone from below) that blend
+   into each other well before either edge, so the
+   effect reads as one wash regardless of how large
+   or small the surface is — never confined to a
+   literal corner. Pure background-image: never
+   intercepts clicks/scroll/drag/touch, and doesn't
+   need an extra DOM layer. Apply alongside the
+   surface's own solid background color (e.g.
+   `bg-graphite atmosphere`), never standalone.
+   ============================================ */
+.atmosphere {
+  background-image:
+    radial-gradient(120% 100% at 50% -20%, rgba(215, 255, 63, 0.09), transparent 55%),
+    radial-gradient(110% 90% at 100% 120%, rgba(61, 92, 140, 0.14), transparent 60%);
+}
+
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-alt: var(--paper-alt);
@@ -172,19 +195,67 @@ body {
   animation: drift-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Editorial floating words around a small number of hero titles — a gentle
-   bob + tilt, never a spin or anything that reads as a toy. See
-   components/FloatingWords.tsx for where this is used. */
-@keyframes float-word {
-  0%, 100% {
-    transform: translateY(0) rotate(var(--float-rot, -6deg));
-  }
-  50% {
-    transform: translateY(-6px) rotate(var(--float-rot, -6deg));
-  }
+/* ============================================
+   Matchin mascot motion — see components/Mascot.tsx.
+   Flat 2D artwork, movement only (no gradients/glow on
+   the character itself). Idle float + occasional blink
+   run continuously but gently; burst/bounce are one-shot
+   or expression-triggered, never layered on top of each
+   other by the component.
+   ============================================ */
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0) rotate(var(--mascot-tilt, 0deg)); }
+  50% { transform: translateY(-4px) rotate(calc(var(--mascot-tilt, 0deg) + 1.5deg)); }
 }
-.animate-float-word {
-  animation: float-word 5s ease-in-out infinite;
+.animate-mascot-float {
+  animation: mascot-float 4.2s ease-in-out infinite;
+}
+
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-7px) scale(1.03, 0.97); }
+  55% { transform: translateY(0) scale(0.97, 1.03); }
+  75% { transform: translateY(-2px) scale(1.01, 0.99); }
+}
+.animate-mascot-bounce {
+  animation: mascot-bounce 1.3s cubic-bezier(0.34, 1.2, 0.64, 1) infinite;
+}
+
+@keyframes mascot-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.1); }
+}
+.animate-mascot-blink {
+  animation: mascot-blink 4.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes mascot-spark-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.85; }
+  30% { transform: translate(2px, -3px) rotate(25deg) scale(1.08); opacity: 1; }
+  60% { transform: translate(-2px, -1px) rotate(-15deg) scale(0.92); opacity: 0.7; }
+}
+.animate-mascot-spark-drift {
+  animation: mascot-spark-drift 3.6s ease-in-out infinite;
+}
+
+@keyframes mascot-burst {
+  0% { transform: translate(0, 0) scale(0.4); opacity: 0; }
+  35% { opacity: 1; }
+  100% { transform: translate(var(--burst-x, 10px), var(--burst-y, -10px)) scale(1); opacity: 0; }
+}
+.animate-mascot-burst {
+  animation: mascot-burst 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+@keyframes mascot-nod {
+  0% { transform: rotate(0deg); }
+  30% { transform: rotate(-6deg); }
+  60% { transform: rotate(4deg); }
+  100% { transform: rotate(0deg); }
+}
+.animate-mascot-nod {
+  animation: mascot-nod 0.7s ease-in-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -194,7 +265,12 @@ body {
   .animate-spark-spin,
   .animate-spark-pop,
   .animate-drift-in,
-  .animate-float-word {
+  .animate-mascot-float,
+  .animate-mascot-bounce,
+  .animate-mascot-blink,
+  .animate-mascot-spark-drift,
+  .animate-mascot-burst,
+  .animate-mascot-nod {
     animation: none !important;
   }
   *,

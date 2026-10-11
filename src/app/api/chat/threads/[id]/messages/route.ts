@@ -6,9 +6,10 @@ import { clothingItemToAI, userToStyleProfile, userToLearnedPreferences } from "
 import { filterWardrobeForWeather, recentOutfitItemIds } from "@/lib/outfitFilters";
 import { getWeatherForCity, getWeatherForCoordinates, weatherToSeasonHint } from "@/lib/weather";
 import { generateAndSaveOutfit } from "@/lib/generateAndSaveOutfit";
-import { spendCredits, OUTFIT_GENERATE_COST } from "@/lib/credits";
+import { spendCredits, CREDIT_COSTS, UNLIMITED_CREDITS } from "@/lib/credits";
 import { analyzeClothingImage } from "@/lib/prompts/clothingAnalyzer";
 import { chatReply } from "@/lib/prompts/chatAssistant";
+import { classifyIntent } from "@/lib/prompts/chatIntent";
 import { saveImage, fileToBase64 } from "@/lib/storage";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -97,8 +98,25 @@ export async function POST(req: Request, { params }: RouteParams) {
     .filter(Boolean)
     .join("; ") || "still being learned";
 
-  // --- Chat-only: a plain grounded reply, no outfit, no credit cost ---
-  if (chatOnly || wardrobeItems.length < 3) {
+  // --- Decide whether this message actually wants an outfit. Without this,
+  // every message (including "hi") fell through to outfit generation below
+  // — a real reported bug, not a hypothetical one. `chatOnly` is the user's
+  // own explicit override; a too-small wardrobe can't produce a real
+  // outfit regardless of intent; otherwise ask Gemini which this message
+  // actually is rather than guessing from keywords. ---
+  let wantsOutfit = !chatOnly && wardrobeItems.length >= 3;
+  if (wantsOutfit) {
+    const intent = await classifyIntent({
+      message: text,
+      history: history.slice(0, -1).map((m) => ({ role: m.role as "user" | "assistant", content: m.content, hadOutfit: !!m.outfitId })),
+      hasAttachment: !!attachmentDescription,
+    });
+    wantsOutfit = intent === "outfit";
+  }
+
+  // --- Chat-only / general conversation: a plain grounded reply, no
+  // outfit, no credit cost ---
+  if (!wantsOutfit) {
     try {
       const reply = await chatReply({
         nickname: user.nickname,
@@ -125,7 +143,7 @@ export async function POST(req: Request, { params }: RouteParams) {
 
   // --- Outfit request: reuse the exact same generation pipeline as
   // Outfit Generator / Playground, framed by this thread's mode. ---
-  if (user.creditBalance < OUTFIT_GENERATE_COST) {
+  if (!UNLIMITED_CREDITS && user.creditBalance < CREDIT_COSTS.OUTFIT_GENERATE) {
     return NextResponse.json(
       { error: "You're out of credits. Buy more to keep asking matchin' for outfits.", code: "OUT_OF_CREDITS" },
       { status: 402 }
@@ -207,7 +225,7 @@ export async function POST(req: Request, { params }: RouteParams) {
     );
   }
 
-  const spend = await spendCredits(user.id, OUTFIT_GENERATE_COST, "chat_outfit_generate");
+  const spend = await spendCredits(user.id, CREDIT_COSTS.OUTFIT_GENERATE, "chat_outfit_generate");
 
   const assistantMessage = await db.chatMessage.create({
     data: {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { RefreshCw, Trash2, Upload, ChevronDown, X, Plus, ThumbsUp, ThumbsDown } from "lucide-react";
+import { RefreshCw, Trash2, Upload, ChevronDown, X, Plus, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Label, Textarea, Input } from "@/components/ui/Field";
 import { StyleSelector } from "@/components/StyleSelector";
@@ -11,7 +11,6 @@ import { PersonalAppearanceUpload } from "@/components/PersonalAppearanceUpload"
 import { PersonalAppearanceReview } from "@/components/PersonalAppearanceReview";
 import { StyleConstellation } from "@/components/StyleConstellation";
 import { BrandPicker } from "@/components/BrandPicker";
-import { FloatingWords } from "@/components/FloatingWords";
 import { Spark } from "@/components/Brand";
 import { cn } from "@/lib/cn";
 import {
@@ -161,12 +160,11 @@ export default function StyleProfilePage() {
     <div className="max-w-2xl">
       <h1 className="font-display text-4xl mb-2">Style Profile</h1>
       <p className="text-stone mb-6">
-        This is what matchin' uses to style you. Update it any time — and it keeps learning from
+        This is what matchin&apos; uses to style you. Update it any time — and it keeps learning from
         your outfit feedback automatically.
       </p>
 
-      <div className="relative rounded-2xl bg-graphite text-white p-6 sm:p-8 mb-10">
-        <FloatingWords words={["YOU", "DNA", "✦", "TASTE"]} />
+      <div className="relative rounded-2xl bg-graphite atmosphere text-white p-6 sm:p-8 mb-10">
         <p className="font-display text-xl lowercase mb-1 relative">style dna</p>
         <p className="text-sm text-white/50 leading-relaxed mb-2 max-w-sm">{profile.styleDNA.summary}</p>
         <p className="text-[11px] text-white/30 mb-2 lowercase">tap a node for why it&apos;s there</p>
@@ -347,7 +345,7 @@ export default function StyleProfilePage() {
       <div className="rounded-2xl border border-line bg-paper-alt p-5 mb-10">
         <p className="font-medium text-sm mb-1">Personal Style Profile</p>
         <p className="text-xs text-stone mb-4">
-          A full-body photo lets matchin' understand your proportions and suggest fits/colors that may suit
+          A full-body photo lets matchin&apos; understand your proportions and suggest fits/colors that may suit
           you — your own choices here always take priority. Purely for styling; never used for identification.
         </p>
         {appearancePhoto?.photoUrl ? (
@@ -444,7 +442,7 @@ export default function StyleProfilePage() {
         </div>
 
         <div>
-          <Label>How you'd describe your usual clothing</Label>
+          <Label>How you&apos;d describe your usual clothing</Label>
           <Textarea rows={3} value={profile.usualClothing} onChange={(e) => set("usualClothing", e.target.value)} />
         </div>
 

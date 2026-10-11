@@ -47,7 +47,7 @@ export function TodaysOutfitCard({ initial, compact = false }: { initial: HomeRe
     return (
       <div className={compact ? "rounded-2xl border border-line bg-paper-alt p-4 flex items-center gap-3" : "rounded-xl border border-dashed border-line py-10 text-center"}>
         <Loader2 className="h-4 w-4 animate-spin text-ink-soft mx-auto" />
-        {!compact && <p className="text-sm text-stone mt-2">Styling today's outfit…</p>}
+        {!compact && <p className="text-sm text-stone mt-2">Styling today&apos;s outfit…</p>}
       </div>
     );
   }

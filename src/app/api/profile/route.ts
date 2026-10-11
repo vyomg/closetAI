@@ -7,6 +7,7 @@ import { TEMPERATURE_UNIT_OPTIONS, DISTANCE_UNIT_OPTIONS } from "@/lib/constants
 import { roundCoordinatePrecision } from "@/lib/geo";
 import { computeWardrobeStats } from "@/lib/wardrobeAnalysis";
 import { computeStyleDNA } from "@/lib/styleDNA";
+import { UNLIMITED_CREDITS } from "@/lib/credits";
 
 const LOCATION_SOURCES = ["NONE", "GPS", "MANUAL"] as const;
 
@@ -81,6 +82,7 @@ export async function GET() {
     neverPreferences: JSON.parse(user.neverPreferences || "[]"),
     themePreference: user.themePreference,
     creditBalance: user.creditBalance,
+    unlimitedCredits: UNLIMITED_CREDITS,
     ...styleProfile,
     ...userToLocationSettings(user),
     learnedPreferences,

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Home, Shirt, ShoppingBag, Menu, X, Luggage, Layers, UserCircle, Settings, LogOut, Crown, BarChart3, Boxes, Trophy, CalendarDays, MessageSquareHeart, MessageCircle, Shuffle, Heart, Bell, BookmarkIcon, Image as ImageIcon } from "lucide-react";
+import { Home, Shirt, ShoppingBag, Menu, X, Luggage, Layers, UserCircle, Settings, LogOut, Coins, BarChart3, Boxes, CalendarDays, MessageSquareHeart, MessageCircle, Shuffle, Heart, Bell, BookmarkIcon, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Spark } from "@/components/Brand";
 import type { LucideIcon } from "lucide-react";
@@ -28,11 +28,10 @@ const MORE_LINKS: { href: string; label: string; icon: LucideIcon; group?: strin
   { href: "/calendar", label: "Calendar", icon: CalendarDays, group: "Plan" },
   { href: "/trips", label: "Trips", icon: Luggage },
   { href: "/ask-a-friend", label: "Ask a Friend", icon: MessageSquareHeart, group: "More" },
-  { href: "/outfits/challenges", label: "Challenges", icon: Trophy },
   { href: "/wardrobe/stats", label: "Wardrobe Stats", icon: BarChart3 },
   { href: "/wardrobe/capsule", label: "Capsule Wardrobe", icon: Boxes },
   { href: "/notifications", label: "Notifications", icon: Bell },
-  { href: "/premium", label: "Premium", icon: Crown },
+  { href: "/buy-credits", label: "Buy Credits", icon: Coins },
   { href: "/settings", label: "Settings", icon: Settings },
   { href: "/connect", label: "Connect With Us", icon: Heart },
 ];

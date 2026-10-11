@@ -43,7 +43,7 @@ export default function OutfitsPage() {
       <div className="flex items-end justify-between mb-8">
         <div>
           <h1 className="font-display text-4xl">My Outfits</h1>
-          <p className="text-stone mt-2">Everything matchin' has put together for you.</p>
+          <p className="text-stone mt-2">Everything matchin&apos; has put together for you.</p>
         </div>
         <LinkButton href="/outfits/create">Create an Outfit</LinkButton>
       </div>
@@ -68,7 +68,7 @@ export default function OutfitsPage() {
       ) : outfits.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-line py-24 text-center">
           <p className="font-display text-2xl mb-3">No outfits yet.</p>
-          <p className="text-stone mb-8">Generate your first outfit and it'll show up here.</p>
+          <p className="text-stone mb-8">Generate your first outfit and it&apos;ll show up here.</p>
           <LinkButton href="/outfits/create">Create an Outfit</LinkButton>
         </div>
       ) : (

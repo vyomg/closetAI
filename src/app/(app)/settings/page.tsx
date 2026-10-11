@@ -23,7 +23,8 @@ import { Input, Label, Select } from "@/components/ui/Field";
 import { detectLocation, getLocationPermissionState, roundCoordinate, type LocationFailureReason } from "@/lib/location";
 import { searchCities, type GeocodeCandidate } from "@/lib/weather";
 import { TEMPERATURE_UNIT_OPTIONS, DISTANCE_UNIT_OPTIONS } from "@/lib/constants";
-import { BrandLoading } from "@/components/Brand";
+import { BrandLoading, MatchinAvatar } from "@/components/Brand";
+import { MeetMatchinModal } from "@/components/MeetMatchinModal";
 import { cn } from "@/lib/cn";
 
 type LocationUiState = "initial" | "requesting" | "success" | "error";
@@ -44,6 +45,7 @@ export default function SettingsPage() {
   const [nickname, setNickname] = useState("");
   const [email, setEmail] = useState("");
   const [creditBalance, setCreditBalance] = useState(0);
+  const [unlimitedCredits, setUnlimitedCredits] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
   const [city, setCity] = useState("");
   const [admin1, setAdmin1] = useState("");
@@ -64,6 +66,7 @@ export default function SettingsPage() {
   const [citySearch, setCitySearch] = useState("");
   const [citySearchResults, setCitySearchResults] = useState<GeocodeCandidate[]>([]);
   const [searchingCity, setSearchingCity] = useState(false);
+  const [showMeetMatchin, setShowMeetMatchin] = useState(false);
 
   useEffect(() => {
     fetch("/api/profile", { cache: "no-store" })
@@ -73,6 +76,7 @@ export default function SettingsPage() {
         setNickname(data.nickname ?? "");
         setEmail(data.email);
         setCreditBalance(data.creditBalance ?? 0);
+        setUnlimitedCredits(Boolean(data.unlimitedCredits));
         setTheme(data.themePreference ?? "dark");
         setCity(data.city ?? "");
         setAdmin1(data.admin1 ?? "");
@@ -252,7 +256,7 @@ export default function SettingsPage() {
               <span className="flex items-center gap-2 text-sm">
                 <CreditCard className="h-4 w-4 text-ink-soft" /> Credits
               </span>
-              <span className="text-sm font-medium">{creditBalance}</span>
+              <span className="text-sm font-medium">{unlimitedCredits ? "∞" : creditBalance}</span>
             </div>
           </div>
         </div>
@@ -414,12 +418,23 @@ export default function SettingsPage() {
         <div>
           <p className="text-xs uppercase tracking-wide text-stone mb-3">Support</p>
           <div className="rounded-2xl border border-line bg-paper-alt divide-y divide-line overflow-hidden">
+            <button
+              onClick={() => setShowMeetMatchin(true)}
+              className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-paper-alt transition-colors cursor-pointer text-left"
+            >
+              <span className="flex items-center gap-3 text-sm">
+                <MatchinAvatar className="h-4 w-4 text-ink-soft" /> Meet Matchin
+              </span>
+              <ChevronRight className="h-4 w-4 text-stone" />
+            </button>
             <SettingsLink href="/connect" icon={<Heart className="h-4 w-4" />} label="Feedback & Support" />
             <SettingsLink href="/legal/privacy" icon={<Shield className="h-4 w-4" />} label="Privacy Policy" />
             <SettingsLink href="/legal/terms" icon={<FileText className="h-4 w-4" />} label="Terms" />
           </div>
         </div>
       </div>
+
+      <MeetMatchinModal open={showMeetMatchin} onClose={() => setShowMeetMatchin(false)} />
     </div>
   );
 }

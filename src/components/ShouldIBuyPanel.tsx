@@ -69,7 +69,7 @@ export function ShouldIBuyPanel() {
     <div id="should-i-buy" className="rounded-2xl border border-line bg-paper-alt p-6 sm:p-7 scroll-mt-6">
       <h2 className="font-display text-2xl mb-1">Should I buy this?</h2>
       <p className="text-sm text-stone mb-6">
-        Photograph an item you&apos;re considering and matchin' will compare it against your wardrobe and preferences.
+        Photograph an item you&apos;re considering and matchin&apos; will compare it against your wardrobe and preferences.
       </p>
 
       <div className="grid sm:grid-cols-[200px_1fr] gap-6">

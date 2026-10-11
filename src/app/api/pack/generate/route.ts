@@ -12,6 +12,8 @@ import { resolveAutoCurrency } from "@/lib/currency";
 const PackSchema = z.object({
   destination: z.string().min(1),
   days: z.number().min(1).max(60),
+  departureDate: z.string().optional(),
+  returnDate: z.string().optional(),
   weatherNotes: z.string().default(""),
   occasions: z.array(z.string()).default(["Everyday"]),
 });
@@ -53,7 +55,10 @@ export async function POST(req: Request) {
       wardrobe: wardrobeItems.map(clothingItemToAI),
       destination: input.destination,
       days: input.days,
-      weatherNotes: input.weatherNotes,
+      weatherNotes:
+        input.departureDate && input.returnDate
+          ? `Traveling ${input.departureDate} to ${input.returnDate}. ${input.weatherNotes}`.trim()
+          : input.weatherNotes,
       weatherContext,
       occasions: input.occasions,
       styleProfile: userToStyleProfile(user),

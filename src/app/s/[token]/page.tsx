@@ -61,7 +61,7 @@ export default async function SharedOutfitPage({ params }: { params: Promise<{ t
 
           <div className="border-t border-line px-6 sm:px-7 py-4 flex items-center justify-between">
             <p className="text-xs text-stone flex items-center gap-1.5">
-              <Shirt className="h-3.5 w-3.5" /> Styled with matchin'
+              <Shirt className="h-3.5 w-3.5" /> Styled with matchin&apos;
             </p>
             <ShareActions url={`/s/${token}`} title={`${outfit.occasion} outfit`} />
           </div>
