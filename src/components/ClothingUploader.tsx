@@ -10,6 +10,7 @@ import type { ClothingItemDTO } from "@/lib/clientTypes";
 
 type UploadEntry = {
   key: string;
+  file: File;
   previewUrl: string;
   status: "analyzing" | "done" | "error";
   item?: ClothingItemDTO & { aiUnavailable?: boolean };
@@ -19,10 +20,14 @@ type UploadEntry = {
 export function ClothingUploader() {
   const [entries, setEntries] = useState<UploadEntry[]>([]);
 
-  const uploadFile = useCallback(async (file: File) => {
-    const key = `${file.name}-${Date.now()}-${Math.random()}`;
+  const uploadFile = useCallback(async (file: File, existingKey?: string) => {
+    const key = existingKey ?? `${file.name}-${Date.now()}-${Math.random()}`;
     const previewUrl = URL.createObjectURL(file);
-    setEntries((prev) => [{ key, previewUrl, status: "analyzing" }, ...prev]);
+    if (existingKey) {
+      setEntries((prev) => prev.map((e) => (e.key === key ? { ...e, status: "analyzing", error: undefined } : e)));
+    } else {
+      setEntries((prev) => [{ key, file, previewUrl, status: "analyzing" }, ...prev]);
+    }
 
     // Client-side pre-validation — fail fast with a specific message instead
     // of round-tripping to the server for something we can already tell.
@@ -60,7 +65,7 @@ export function ClothingUploader() {
 
   const onDrop = useCallback(
     (accepted: File[]) => {
-      accepted.forEach(uploadFile);
+      accepted.forEach((file) => uploadFile(file));
     },
     [uploadFile]
   );
@@ -73,7 +78,7 @@ export function ClothingUploader() {
 
   function onCameraCapture(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
-    if (files) Array.from(files).forEach(uploadFile);
+    if (files) Array.from(files).forEach((file) => uploadFile(file));
     e.target.value = "";
   }
 
@@ -103,7 +108,7 @@ export function ClothingUploader() {
       {entries.length > 0 && (
         <div className="mt-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {entries.map((entry) => (
-            <UploadCard key={entry.key} entry={entry} />
+            <UploadCard key={entry.key} entry={entry} onRetry={() => uploadFile(entry.file, entry.key)} />
           ))}
         </div>
       )}
@@ -125,7 +130,7 @@ function AnalyzingStatus() {
   return <p className="text-xs text-stone">{ANALYZING_STEPS[step]}</p>;
 }
 
-function UploadCard({ entry }: { entry: UploadEntry }) {
+function UploadCard({ entry, onRetry }: { entry: UploadEntry; onRetry: () => void }) {
   return (
     <div className="rounded-2xl border border-line bg-paper-alt overflow-hidden animate-fade-up">
       <div className="relative aspect-[4/5] bg-paper-alt">
@@ -165,7 +170,15 @@ function UploadCard({ entry }: { entry: UploadEntry }) {
             </Link>
           </>
         ) : entry.status === "error" ? (
-          <p className="text-xs text-warning">{entry.error}</p>
+          <>
+            <p className="text-xs text-warning mb-2">{entry.error}</p>
+            <button
+              onClick={onRetry}
+              className="text-xs font-medium underline underline-offset-4 text-ink hover:text-ink-soft cursor-pointer"
+            >
+              Retry
+            </button>
+          </>
         ) : (
           <AnalyzingStatus />
         )}

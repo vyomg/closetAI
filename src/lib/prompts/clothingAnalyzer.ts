@@ -3,6 +3,7 @@ import {
   getGeminiClient,
   GEMINI_MODEL,
   extractJson,
+  withGeminiRetry,
 } from "@/lib/anthropic";
 import { CATEGORY_LIST, CATEGORIES, COLOR_PALETTE } from "@/lib/constants";
 import type { ClothingAnalysis } from "@/lib/types";
@@ -164,30 +165,32 @@ export async function analyzeClothingImage(
 ): Promise<ClothingAnalysis> {
   const client = getGeminiClient();
 
-  const response = await client.models.generateContent({
-    model: GEMINI_MODEL,
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            inlineData: {
-              mimeType: mediaType,
-              data: base64Image,
+  const response = await withGeminiRetry(() =>
+    client.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType: mediaType,
+                data: base64Image,
+              },
             },
-          },
-          {
-            text: `Analyze this clothing item and respond with JSON matching exactly this shape:\n${RESPONSE_SHAPE}`,
-          },
-        ],
+            {
+              text: `Analyze this clothing item and respond with JSON matching exactly this shape:\n${RESPONSE_SHAPE}`,
+            },
+          ],
+        },
+      ],
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+        responseSchema: RESPONSE_SCHEMA,
       },
-    ],
-    config: {
-      systemInstruction: SYSTEM_PROMPT,
-      responseMimeType: "application/json",
-      responseSchema: RESPONSE_SCHEMA,
-    },
-  });
+    })
+  );
 
   const text = response.text;
 

@@ -112,10 +112,48 @@ export function styleLearningDeckFor(shopFor: string): StyleLearningCard[] {
 
 // Landing-page wheel result — four individual garment photos standing in
 // for "a complete fit", public/demo-safe, never the signed-in user's own
-// wardrobe photos.
+// wardrobe photos. Kept only as the fallback for an unrecognized segment —
+// see wheelResultCardsFor below for the per-segment result.
 export const LANDING_WHEEL_OUTFIT = [
   { imageUrl: unsplash("photo-1622445272461-c6580cab8755"), label: "Top" },
   { imageUrl: unsplash("photo-1602293589930-45aad59ba3ab"), label: "Bottom" },
   { imageUrl: unsplash("photo-1626379616459-b2ce1d9decbc"), label: "Shoes" },
   { imageUrl: unsplash("photo-1662990209247-7ddb7ca0fccd"), label: "Accessory" },
 ];
+
+// Maps each wheel segment (src/app/page.tsx's WHEEL_SEGMENTS) to the
+// STYLE_LEARNING_DECK style tag(s) it actually represents, so landing on a
+// given segment shows outfits that genuinely match it rather than the same
+// fixed four images every time. "SURPRISE ME" deliberately has no fixed
+// mapping — it picks from the whole deck for a different result each spin.
+// CHILL combines Relaxed + Sporty (the deck has only a single Sporty entry
+// on its own — too few for a full four-image result) rather than reusing
+// a style another segment already owns outright.
+const WHEEL_SEGMENT_STYLES: Record<string, string[]> = {
+  STREET: ["Streetwear"],
+  CLEAN: ["Minimal"],
+  SMART: ["Smart Casual"],
+  BOLD: ["Trendy"],
+  CASUAL: ["Relaxed"],
+  CHILL: ["Relaxed", "Sporty"],
+  "DATE NIGHT": ["Formal"],
+};
+
+function pickRandom<T>(items: T[], count: number): T[] {
+  const pool = [...items];
+  const picked: T[] = [];
+  while (pool.length > 0 && picked.length < count) {
+    picked.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  }
+  return picked;
+}
+
+// Four real-outfit photos matching the landed wheel segment's style, mixing
+// both genders (the landing page is pre-signup, so no gender preference is
+// known yet). Falls back to a random mix for "SURPRISE ME" or any segment
+// without a mapping.
+export function wheelResultCardsFor(segment: string): StyleLearningCard[] {
+  const styles = WHEEL_SEGMENT_STYLES[segment];
+  const matching = styles ? STYLE_LEARNING_DECK.filter((c) => styles.includes(c.style)) : STYLE_LEARNING_DECK;
+  return pickRandom(matching, 4);
+}

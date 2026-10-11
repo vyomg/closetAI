@@ -12,19 +12,19 @@ import type { LucideIcon } from "lucide-react";
 // matchin'-ing is the product's single most important action, so it gets
 // its own raised lime center tab rather than blending in as just another
 // icon+label pair like the rest of the bar.
-const TABS = [
+const TABS: { href: string; label: string; icon: LucideIcon; tourKey?: string }[] = [
   { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
+  { href: "/wardrobe", label: "Wardrobe", icon: Shirt, tourKey: "wardrobe" },
   { href: "/buy", label: "Shop", icon: ShoppingBag },
 ];
 
-const MORE_LINKS: { href: string; label: string; icon: LucideIcon; group?: string }[] = [
-  { href: "/chat", label: "Chat Now", icon: MessageCircle, group: "Style" },
-  { href: "/outfits", label: "Outfits", icon: Layers },
-  { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle },
-  { href: "/style-profile", label: "Style DNA", icon: UserCircle },
-  { href: "/wishlist", label: "Wishlist", icon: BookmarkIcon, group: "Discover" },
-  { href: "/gallery", label: "Gallery", icon: ImageIcon },
+const MORE_LINKS: { href: string; label: string; icon: LucideIcon; group?: string; tourKey?: string }[] = [
+  { href: "/chat", label: "Chat Now", icon: MessageCircle, group: "Style", tourKey: "chat" },
+  { href: "/outfits", label: "Outfits", icon: Layers, tourKey: "outfits" },
+  { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle, tourKey: "playground" },
+  { href: "/style-profile", label: "Style DNA", icon: UserCircle, tourKey: "style-dna" },
+  { href: "/wishlist", label: "Wishlist", icon: BookmarkIcon, group: "Discover", tourKey: "wishlist" },
+  { href: "/gallery", label: "Gallery", icon: ImageIcon, tourKey: "gallery" },
   { href: "/calendar", label: "Calendar", icon: CalendarDays, group: "Plan" },
   { href: "/trips", label: "Trips", icon: Luggage },
   { href: "/ask-a-friend", label: "Ask a Friend", icon: MessageSquareHeart, group: "More" },
@@ -56,6 +56,19 @@ export function MobileNav() {
       .catch(() => {});
   }, [pathname]);
 
+  // The guided tour (GuidedTour.tsx) needs to spotlight a few features that
+  // only live inside this sheet on mobile (Chat Now, Outfits, Playground,
+  // Style DNA, Wishlist, Gallery) — it asks us to open to reveal them
+  // rather than reaching into our local state directly.
+  useEffect(() => {
+    function onTourRequestOpen(e: Event) {
+      const tourKey = (e as CustomEvent<string>).detail;
+      if (MORE_LINKS.some((l) => l.tourKey === tourKey)) setMoreOpen(true);
+    }
+    window.addEventListener("matchin:tour-request-open", onTourRequestOpen);
+    return () => window.removeEventListener("matchin:tour-request-open", onTourRequestOpen);
+  }, []);
+
   const moreActive = MORE_LINKS.some((l) => isActivePath(pathname, l.href));
 
   // Chat Now is a full-screen workspace (its own header, its own way back)
@@ -78,6 +91,7 @@ export function MobileNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                data-tour={tab.tourKey}
                 className="flex flex-col items-center justify-center gap-1 py-2.5 min-h-11"
               >
                 <Icon className={cn("h-5 w-5", active ? "text-lime" : "text-white/50")} strokeWidth={active ? 2.25 : 1.75} />
@@ -103,6 +117,7 @@ export function MobileNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                data-tour={tab.tourKey}
                 className="flex flex-col items-center justify-center gap-1 py-2.5 min-h-11"
               >
                 <Icon className={cn("h-5 w-5", active ? "text-lime" : "text-white/50")} strokeWidth={active ? 2.25 : 1.75} />
@@ -147,6 +162,7 @@ export function MobileNav() {
                     <Link
                       href={link.href}
                       onClick={() => setMoreOpen(false)}
+                      data-tour={link.tourKey}
                       className={cn(
                         "flex items-center gap-3 rounded-xl px-3 py-3.5 text-sm transition-colors",
                         isActivePath(pathname, link.href) ? "bg-paper-alt font-medium" : "hover:bg-paper-alt"

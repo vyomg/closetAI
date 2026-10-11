@@ -9,7 +9,7 @@ import { Mascot, MascotSparkField } from "@/components/Mascot";
 import { StoreBadges } from "@/components/StoreBadges";
 import { MatchinWheel } from "@/components/MatchinWheel";
 import { ArrowRight } from "lucide-react";
-import { LANDING_WHEEL_OUTFIT } from "@/lib/publicFashion";
+import { wheelResultCardsFor } from "@/lib/publicFashion";
 
 const WHEEL_SEGMENTS = ["STREET", "CLEAN", "SMART", "BOLD", "CASUAL", "CHILL", "DATE NIGHT", "SURPRISE ME"];
 
@@ -22,6 +22,7 @@ const FEATURES = [
 
 export default function LandingPage() {
   const [landed, setLanded] = useState<string | null>(null);
+  const [resultCards, setResultCards] = useState<ReturnType<typeof wheelResultCardsFor>>([]);
 
   return (
     <div className="flex-1 bg-paper">
@@ -72,7 +73,15 @@ export default function LandingPage() {
           <h2 className="font-display text-3xl sm:text-5xl uppercase tracking-tight mb-2">what are you feelin&apos;?</h2>
           <p className="text-sm text-white/40 lowercase mb-10">spin it. find your vibe.</p>
 
-          <MatchinWheel segments={WHEEL_SEGMENTS} onLand={(seg) => setLanded(seg)} size={300} className="mx-auto" />
+          <MatchinWheel
+            segments={WHEEL_SEGMENTS}
+            onLand={(seg) => {
+              setLanded(seg);
+              setResultCards(wheelResultCardsFor(seg));
+            }}
+            size={300}
+            className="mx-auto"
+          />
 
           {landed && (
             <div className="mt-10 animate-fade-up">
@@ -82,8 +91,8 @@ export default function LandingPage() {
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-5 max-w-sm mx-auto text-left">
                 <div className="grid grid-cols-4 gap-2.5 mb-4">
-                  {LANDING_WHEEL_OUTFIT.map((item) => (
-                    <div key={item.imageUrl} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-white/10">
+                  {resultCards.map((item, i) => (
+                    <div key={item.imageUrl + i} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-white/10">
                       <Image src={item.imageUrl} alt={item.label} fill sizes="80px" className="object-cover" />
                     </div>
                   ))}

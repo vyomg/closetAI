@@ -34,28 +34,28 @@ import type { LucideIcon } from "lucide-react";
 // primary action rather than living in this list, since it's the single
 // most important thing to do in the product (see the lime CTA rendered
 // above this list).
-const GROUPS: { label: string; links: { href: string; label: string; icon: LucideIcon }[] }[] = [
+const GROUPS: { label: string; links: { href: string; label: string; icon: LucideIcon; tourKey?: string }[] }[] = [
   {
     label: "Main",
     links: [
       { href: "/dashboard", label: "Home", icon: Home },
-      { href: "/wardrobe", label: "Wardrobe", icon: Shirt },
+      { href: "/wardrobe", label: "Wardrobe", icon: Shirt, tourKey: "wardrobe" },
     ],
   },
   {
     label: "Style",
     links: [
-      { href: "/chat", label: "Chat Now", icon: MessageCircle },
-      { href: "/outfits", label: "Outfits", icon: Layers },
-      { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle },
-      { href: "/style-profile", label: "Style DNA", icon: UserCircle },
+      { href: "/chat", label: "Chat Now", icon: MessageCircle, tourKey: "chat" },
+      { href: "/outfits", label: "Outfits", icon: Layers, tourKey: "outfits" },
+      { href: "/outfits/playground", label: "Outfit Playground", icon: Shuffle, tourKey: "playground" },
+      { href: "/style-profile", label: "Style DNA", icon: UserCircle, tourKey: "style-dna" },
     ],
   },
   {
     label: "Discover",
     links: [
-      { href: "/wishlist", label: "Wishlist", icon: BookmarkIcon },
-      { href: "/gallery", label: "Gallery", icon: ImageIcon },
+      { href: "/wishlist", label: "Wishlist", icon: BookmarkIcon, tourKey: "wishlist" },
+      { href: "/gallery", label: "Gallery", icon: ImageIcon, tourKey: "gallery" },
     ],
   },
   {
@@ -170,6 +170,7 @@ export function Sidebar({ userName, userEmail }: { userName: string; userEmail: 
                   key={link.href}
                   href={link.href}
                   prefetch={false}
+                  data-tour={link.tourKey}
                   className={cn(
                     "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm transition-colors",
                     active ? "bg-white/10 text-white font-medium" : "text-white/60 hover:bg-white/5 hover:text-white"

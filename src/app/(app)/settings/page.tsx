@@ -17,6 +17,7 @@ import {
   CreditCard,
   Shield,
   FileText,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select } from "@/components/ui/Field";
@@ -411,6 +412,18 @@ export default function SettingsPage() {
             <SettingsLink href="/style-profile" icon={<Sparkles className="h-4 w-4" />} label="Style DNA & Preferences" />
             <SettingsLink href="/buy" icon={<ShoppingBag className="h-4 w-4" />} label="Shopping Preferences" />
             <SettingsLink href="/ask-a-friend" icon={<UserPlus className="h-4 w-4" />} label="Ask a Friend" />
+            <button
+              onClick={() => {
+                router.push("/dashboard");
+                setTimeout(() => window.dispatchEvent(new Event("matchin:replay-tour")), 300);
+              }}
+              className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-paper-alt transition-colors cursor-pointer text-left"
+            >
+              <span className="flex items-center gap-3 text-sm">
+                <Compass className="h-4 w-4 text-ink-soft" /> Replay app tour
+              </span>
+              <ChevronRight className="h-4 w-4 text-stone" />
+            </button>
           </div>
         </div>
 

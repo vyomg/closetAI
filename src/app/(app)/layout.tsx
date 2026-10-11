@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/Sidebar";
 import { MobileNav } from "@/components/MobileNav";
+import { GuidedTour } from "@/components/GuidedTour";
 import { ThemeRoot } from "@/components/ThemeRoot";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -22,6 +23,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </main>
       </div>
       <MobileNav />
+      <GuidedTour />
     </ThemeRoot>
   );
 }

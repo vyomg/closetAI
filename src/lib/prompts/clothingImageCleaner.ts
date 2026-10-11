@@ -1,5 +1,5 @@
 import { Modality } from "@google/genai";
-import { getGeminiClient, AIConfigError } from "@/lib/anthropic";
+import { getGeminiClient, AIConfigError, withGeminiRetry } from "@/lib/anthropic";
 
 const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
 
@@ -25,18 +25,20 @@ export async function cleanClothingImage(base64Image: string, mimeType: string):
   }
 
   try {
-    const response = await client.models.generateContent({
-      model: GEMINI_IMAGE_MODEL,
-      contents: [
-        {
-          role: "user",
-          parts: [{ inlineData: { mimeType, data: base64Image } }, { text: PROMPT }],
+    const response = await withGeminiRetry(() =>
+      client.models.generateContent({
+        model: GEMINI_IMAGE_MODEL,
+        contents: [
+          {
+            role: "user",
+            parts: [{ inlineData: { mimeType, data: base64Image } }, { text: PROMPT }],
+          },
+        ],
+        config: {
+          responseModalities: [Modality.IMAGE, Modality.TEXT],
         },
-      ],
-      config: {
-        responseModalities: [Modality.IMAGE, Modality.TEXT],
-      },
-    });
+      })
+    );
 
     const imagePart = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
     if (!imagePart?.inlineData?.data) return null;

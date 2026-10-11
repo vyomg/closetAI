@@ -170,7 +170,9 @@ export default function OnboardingPage() {
         heightCm: data.heightCm ? Number(data.heightCm) : undefined,
       }),
     });
-    router.push("/dashboard");
+    // ?tour=1 tells the dashboard to launch the guided tour once, right
+    // after a real onboarding completion — see components/GuidedTour.tsx.
+    router.push("/dashboard?tour=1");
     router.refresh();
   }
 

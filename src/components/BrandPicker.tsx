@@ -4,29 +4,35 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { BRAND_CATALOG, type BrandEntry } from "@/lib/constants";
+import { BRANDS_WITHOUT_LOGO } from "@/lib/brandLogoStatus";
 
 // A brand's own site favicon, used as a lightweight stand-in for its logo —
-// never a fabricated mark. Google's favicon service never 404s (unknown
-// domains silently fall back to a tiny generic globe icon), so we detect
-// that fallback by its size and swap to a clean text tile instead of
-// showing a meaningless globe as if it were the brand's logo.
+// never a fabricated mark. Google's favicon service never 404s with an
+// empty response for an unresolvable domain: it serves a generic fallback
+// icon, as its own HTTP body, under a 404 status. Browser-side, there is no
+// reliable way to tell that fallback apart from a genuine small/simple logo
+// (byte-size and pixel-dimension checks both produce false positives — e.g.
+// Nike's real logo is only 398 bytes, smaller than several broken domains —
+// and a hash comparison would work in principle but Google's favicon
+// endpoint does not send CORS headers, so a client-side `fetch()` to it
+// fails outright). So the hash comparison instead runs server-side, ahead
+// of time, across every brandCatalog.ts domain — see brandLogoStatus.ts's
+// header for how to regenerate it — and its result (the set of domains
+// confirmed to have no real logo) is baked in here as a static lookup.
+function useBrandLogoUrl(domain: string): { url: string | null } {
+  if (BRANDS_WITHOUT_LOGO.has(domain)) return { url: null };
+  return { url: `https://www.google.com/s2/favicons?domain=${domain}&sz=64` };
+}
+
 function BrandLogo({ brand }: { brand: BrandEntry }) {
-  const [state, setState] = useState<"loading" | "ok" | "none">("loading");
+  const { url } = useBrandLogoUrl(brand.domain);
+  const [failed, setFailed] = useState(false);
   return (
     <span className="relative h-5 w-5 shrink-0 rounded-full bg-paper overflow-hidden flex items-center justify-center">
-      {state !== "none" && (
+      {url && !failed ? (
         // eslint-disable-next-line @next/next/no-img-element -- tiny external favicon, not worth Next/Image's optimizer
-        <img
-          src={`https://www.google.com/s2/favicons?domain=${brand.domain}&sz=64`}
-          alt=""
-          width={20}
-          height={20}
-          className={cn("h-full w-full object-contain", state !== "ok" && "opacity-0")}
-          onLoad={(e) => setState(e.currentTarget.naturalWidth >= 32 ? "ok" : "none")}
-          onError={() => setState("none")}
-        />
-      )}
-      {state === "none" && (
+        <img src={url} alt="" width={20} height={20} className="h-full w-full object-contain" onError={() => setFailed(true)} />
+      ) : (
         <span className="text-[9px] font-semibold text-ink-soft">{brand.name.charAt(0)}</span>
       )}
     </span>
