@@ -29,10 +29,14 @@ export function StyleDiscovery() {
       </div>
 
       {combo.length > 0 ? (
-        <div className="grid grid-cols-4 gap-3 max-w-lg animate-fade-in" key={active}>
-          {combo.map((item) => (
-            <div key={item.imageUrl} className="relative aspect-[4/5] rounded-xl overflow-hidden bg-paper-alt">
-              <Image src={item.imageUrl} alt={`${item.primaryColor} ${item.category}`} fill sizes="140px" className="object-cover" />
+        <div className="grid grid-cols-4 gap-2.5 max-w-md" key={active}>
+          {combo.map((item, i) => (
+            <div
+              key={item.imageUrl}
+              className="relative aspect-[4/5] rounded-lg overflow-hidden bg-paper-alt animate-fade-up transition-transform duration-200 hover:scale-105"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <Image src={item.imageUrl} alt={`${item.primaryColor} ${item.category}`} fill sizes="110px" className="object-cover" />
             </div>
           ))}
         </div>

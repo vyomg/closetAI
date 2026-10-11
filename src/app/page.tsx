@@ -8,7 +8,6 @@ import { Brand, Spark } from "@/components/Brand";
 import { Mascot, MascotSparkField } from "@/components/Mascot";
 import { StoreBadges } from "@/components/StoreBadges";
 import { MatchinWheel } from "@/components/MatchinWheel";
-import { OutfitBuilder } from "@/components/landing/OutfitBuilder";
 import { StyleDiscovery } from "@/components/landing/StyleDiscovery";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
 import { ArrowRight, Shirt, Compass, Sparkle } from "lucide-react";
@@ -55,37 +54,29 @@ export default function LandingPage() {
           </div>
         </header>
 
-        <section className="mx-auto max-w-6xl px-5 sm:px-6 pt-10 pb-20 sm:pt-16 sm:pb-28 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center">
-          <div className="text-center lg:text-left">
-            <div className="relative inline-block mb-6 animate-fade-up">
-              <MascotSparkField className="absolute -inset-10" />
-              <Mascot expression="welcoming" size={64} />
-            </div>
-            <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-5 animate-fade-up">your wardrobe, matched</p>
-            <h1 className="font-display text-[12vw] leading-[0.95] sm:text-6xl lg:text-7xl tracking-tight uppercase animate-fade-up">
-              your wardrobe is full.
-              <br />
-              <span className="text-lime">your next outfit</span>
-              <br />
-              is waiting.
-            </h1>
-            <p className="mt-7 text-base sm:text-lg text-white/60 max-w-md mx-auto lg:mx-0 leading-relaxed animate-fade-up">
-              Discover combinations that fit your style, make more of the clothes you already own, and spend less time wondering what to wear.
-            </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center lg:justify-start gap-4 animate-fade-up">
-              <LinkButton href="/signup" variant="lime" size="lg" className="lowercase">
-                start now
-              </LinkButton>
-              <Link href="#how-it-works" className="inline-flex items-center gap-1.5 text-sm text-white/70 hover:text-white transition-colors font-medium">
-                see how it works <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-            <StoreBadges dark className="mt-8 flex flex-wrap items-center justify-center lg:justify-start gap-3" />
+        <section className="mx-auto max-w-6xl px-5 sm:px-6 pt-10 pb-20 sm:pt-16 sm:pb-28 text-center">
+          <div className="relative inline-block mb-6 animate-fade-up">
+            <MascotSparkField className="absolute -inset-10" />
+            <Mascot expression="welcoming" size={72} />
           </div>
-
-          <div className="mt-14 lg:mt-0 animate-fade-up">
-            <OutfitBuilder />
+          <p className="text-xs tracking-[0.25em] uppercase text-white/40 mb-5 animate-fade-up">your wardrobe, matched</p>
+          <h1 className="font-display text-[15vw] leading-[0.92] sm:text-7xl lg:text-8xl tracking-tight uppercase animate-fade-up">
+            your wardrobe.
+            <br />
+            <span className="text-lime">matched.</span>
+          </h1>
+          <p className="mt-7 text-base sm:text-lg text-white/60 max-w-md mx-auto leading-relaxed animate-fade-up">
+            matchin&apos; turns the clothes you already own into complete, wearable fits — built from your actual closet, not a catalogue.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4 animate-fade-up">
+            <LinkButton href="/signup" variant="lime" size="lg" className="lowercase">
+              start now
+            </LinkButton>
+            <LinkButton href="/login" variant="outline-dark" size="lg" className="lowercase">
+              log in
+            </LinkButton>
           </div>
+          <StoreBadges dark className="mt-8 flex flex-wrap items-center justify-center gap-3" />
         </section>
       </div>
 
@@ -104,23 +95,22 @@ export default function LandingPage() {
           </ScrollReveal>
 
           <ScrollReveal delay={150} className="mt-12 lg:mt-0">
-            <div className="relative h-72 sm:h-80">
-              {CLUTTER_ITEMS.slice(0, 7).map((item, i) => {
+            <div className="relative h-52 sm:h-60 max-w-sm mx-auto lg:mx-0">
+              {CLUTTER_ITEMS.slice(0, 6).map((item, i) => {
                 const positions = [
-                  "top-0 left-[8%] rotate-[-8deg]",
-                  "top-[4%] left-[38%] rotate-[6deg]",
-                  "top-[2%] right-[4%] rotate-[-4deg]",
-                  "top-[34%] left-[0%] rotate-[10deg]",
-                  "top-[30%] left-[32%] rotate-[-6deg]",
-                  "top-[36%] right-[6%] rotate-[5deg]",
-                  "top-[60%] left-[18%] rotate-[-3deg]",
+                  "top-0 left-[10%] rotate-[-8deg]",
+                  "top-[2%] left-[42%] rotate-[6deg]",
+                  "top-0 right-[6%] rotate-[-4deg]",
+                  "top-[42%] left-[2%] rotate-[9deg]",
+                  "top-[38%] left-[36%] rotate-[-6deg]",
+                  "top-[44%] right-[8%] rotate-[5deg]",
                 ];
                 return (
                   <div
                     key={item.imageUrl}
-                    className={`absolute w-24 h-28 sm:w-28 sm:h-32 rounded-xl overflow-hidden border border-line shadow-sm bg-paper-alt ${positions[i % positions.length]}`}
+                    className={`group absolute w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border border-line shadow-sm bg-paper-alt transition-transform duration-300 hover:rotate-0 hover:scale-110 hover:z-10 ${positions[i % positions.length]}`}
                   >
-                    <Image src={item.imageUrl} alt="" fill sizes="112px" className="object-cover" />
+                    <Image src={item.imageUrl} alt="" fill sizes="80px" className="object-cover" />
                   </div>
                 );
               })}
@@ -193,19 +183,19 @@ export default function LandingPage() {
                 <p className="text-xs tracking-[0.2em] uppercase text-white/40 mb-1">you landed on</p>
                 <p className="font-display text-2xl text-lime mb-6">{landed}</p>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-5 max-w-sm mx-auto text-left">
-                  <div className="grid grid-cols-4 gap-2.5 mb-4">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 max-w-xs mx-auto text-left">
+                  <div className="grid grid-cols-4 gap-2 mb-3">
                     {resultCards.map((item, i) => (
-                      <div key={item.imageUrl + i} className="relative aspect-[4/5] rounded-lg overflow-hidden bg-white/10">
-                        <Image src={item.imageUrl} alt={item.label} fill sizes="80px" className="object-cover" />
+                      <div key={item.imageUrl + i} className="relative aspect-[4/5] rounded-md overflow-hidden bg-white/10 transition-transform duration-200 hover:scale-105">
+                        <Image src={item.imageUrl} alt={item.label} fill sizes="64px" className="object-cover" />
                       </div>
                     ))}
                   </div>
-                  <p className="text-sm font-medium flex items-center gap-1.5">
-                    <Spark className="h-3.5 w-3.5 text-lime shrink-0" /> this one&apos;s a match
+                  <p className="text-xs font-medium flex items-center gap-1.5">
+                    <Spark className="h-3 w-3 text-lime shrink-0" /> this one&apos;s a match
                   </p>
-                  <Link href="/signup" className="mt-3 inline-flex items-center gap-1.5 text-sm text-lime font-medium">
-                    try it with my wardrobe <ArrowRight className="h-3.5 w-3.5" />
+                  <Link href="/signup" className="mt-2.5 inline-flex items-center gap-1.5 text-xs text-lime font-medium">
+                    try it with my wardrobe <ArrowRight className="h-3 w-3" />
                   </Link>
                 </div>
               </div>
