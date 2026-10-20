@@ -180,9 +180,13 @@ export function InfiniteWardrobe() {
           ))}
         </div>
 
-        {/* Stage D — reveal + CTA */}
+        {/* Stage D — reveal + CTA. A full-cover centered overlay (not a
+            bottom-anchored block) so its own height never competes with
+            the garment stage above it — on short mobile viewports a
+            bottom-pinned block was tall enough to overlap the lower
+            garments before they'd fully faded. */}
         <div
-          className="absolute inset-x-0 bottom-0 pb-16 sm:pb-20 pt-24 text-center px-6 bg-gradient-to-t from-ink via-ink/95 to-transparent transition-opacity duration-300"
+          className="absolute inset-0 flex flex-col items-center justify-center bg-ink text-center px-6 transition-opacity duration-300"
           style={{ opacity: finalT, pointerEvents: finalT > 0.5 ? "auto" : "none" }}
         >
           <h2 className="font-display text-3xl sm:text-5xl uppercase tracking-tight text-white mb-3">style more. buy less.</h2>
