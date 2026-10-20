@@ -28,6 +28,7 @@ export const metadata: Metadata = {
     title: "matchin'",
     description: "your wardrobe. matched.",
   },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
