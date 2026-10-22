@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 // A single lightweight IntersectionObserver-based reveal, reused across the
 // landing page's scroll-triggered sections instead of a dependency like
@@ -14,10 +15,9 @@ import { cn } from "@/lib/cn";
 export function ScrollReveal({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
-  const [skipAnimation, setSkipAnimation] = useState(false);
+  const skipAnimation = useReducedMotion();
 
   useEffect(() => {
-    setSkipAnimation(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const el = ref.current;
     if (!el) return;
     const observer = new IntersectionObserver(

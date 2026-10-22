@@ -18,15 +18,15 @@ export function DesktopHome({ data }: { data: HomeData }) {
       {!hasAppearanceProfile && <StyleProfileNudge />}
 
       {/* Hero + weather merged into one dark card — matchin's "today's match" moment. */}
-      <div className="rounded-2xl bg-graphite atmosphere text-white p-8 flex items-center justify-between gap-8 mb-10">
+      <div className="rounded-2xl bg-graphite atmosphere text-white p-10 flex items-center justify-between gap-10 mb-12">
         <div className="relative flex-1 min-w-0">
-          <p className="text-white/40 mb-1 lowercase">
+          <p className="text-white/40 mb-2 lowercase">
             {greeting().toLowerCase()}, {firstName}.
           </p>
-          <h1 className="font-display text-4xl mb-5 flex items-center gap-2 relative">
+          <h1 className="font-display text-4xl mb-6 flex items-center gap-2 relative">
             today&apos;s match <Spark className="h-6 w-6 text-lime" />
           </h1>
-          <p className="text-white/50 mb-6 max-w-lg text-sm">
+          <p className="text-white/50 mb-7 max-w-lg text-sm leading-relaxed">
             One tap — matchin&apos; checks today&apos;s weather, your recent outfits, and your style to put
             something together right now.
           </p>
@@ -54,9 +54,9 @@ export function DesktopHome({ data }: { data: HomeData }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-[1.4fr_1fr] gap-6 mb-10 items-stretch">
-        <section className="rounded-2xl border border-line bg-paper-alt p-7">
-          <div className="flex items-center justify-between mb-5">
+      <div className="grid grid-cols-[1.4fr_1fr] gap-8 mb-12 items-stretch">
+        <section className="rounded-2xl border border-line bg-paper-alt p-8">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="font-display text-2xl">Today&apos;s Outfit</h2>
             {todaysOutfit && (
               <Link href="/outfits" className="text-sm text-stone hover:text-ink">
@@ -69,32 +69,32 @@ export function DesktopHome({ data }: { data: HomeData }) {
 
         <Link
           href="/buy"
-          className="rounded-2xl border border-line bg-paper-alt p-7 flex flex-col justify-between hover:border-ink/30 transition-colors"
+          className="rounded-2xl border border-line bg-paper-alt p-8 flex flex-col justify-between hover:border-ink/30 transition-colors"
         >
           <div>
-            <ShoppingBag className="h-5 w-5 text-ink-soft mb-3" strokeWidth={1.75} />
-            <h2 className="font-display text-xl mb-2">Shopping opportunities</h2>
-            <p className="text-sm text-ink-soft">What&apos;s missing from your wardrobe — and worth buying.</p>
+            <ShoppingBag className="h-5 w-5 text-ink-soft mb-4" strokeWidth={1.75} />
+            <h2 className="font-display text-xl mb-2.5">Shopping opportunities</h2>
+            <p className="text-sm text-ink-soft leading-relaxed">What&apos;s missing from your wardrobe — and worth buying.</p>
           </div>
-          <p className="text-sm font-medium mt-5 inline-flex items-center gap-1.5">
+          <p className="text-sm font-medium mt-6 inline-flex items-center gap-1.5">
             Explore Buy Clothes <ArrowRight className="h-3.5 w-3.5" />
           </p>
         </Link>
       </div>
 
-      <div className="mb-10">
+      <div className="mb-12">
         <DashboardStats itemCount={itemCount} styleTags={styleTags} />
       </div>
 
       {recentItems.length > 0 && (
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-4">
+        <section className="mb-14">
+          <div className="flex items-center justify-between mb-5">
             <h2 className="font-display text-2xl">Recently Added</h2>
             <Link href="/wardrobe" className="text-sm text-stone hover:text-ink">
               View all →
             </Link>
           </div>
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-6 gap-5">
             {recentItems.map((item) => (
               <Link
                 key={item.id}
@@ -109,14 +109,14 @@ export function DesktopHome({ data }: { data: HomeData }) {
       )}
 
       {recentOutfits.length > 0 && (
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-4">
+        <section className="mb-14">
+          <div className="flex items-center justify-between mb-5">
             <h2 className="font-display text-2xl">Recent Outfits</h2>
             <Link href="/outfits" className="text-sm text-stone hover:text-ink">
               View all →
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 gap-6">
             {recentOutfits.map((outfit) => (
               <Link
                 key={outfit.id}
@@ -139,8 +139,8 @@ export function DesktopHome({ data }: { data: HomeData }) {
       )}
 
       <section>
-        <h2 className="font-display text-2xl mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 gap-4 max-w-md">
+        <h2 className="font-display text-2xl mb-5">Quick Actions</h2>
+        <div className="grid grid-cols-2 gap-5 max-w-md">
           <QuickAction href="/wardrobe/add" icon={<Plus className="h-5 w-5" />} label="Add Clothing" />
           <QuickAction href="/pack" icon={<Luggage className="h-5 w-5" />} label="Pack for Trip" />
         </div>
@@ -153,7 +153,7 @@ function QuickAction({ href, icon, label }: { href: string; icon: React.ReactNod
   return (
     <Link
       href={href}
-      className="rounded-2xl border border-line bg-paper-alt p-5 flex flex-col items-center justify-center gap-2.5 text-center hover:border-ink/30 transition-colors"
+      className="rounded-2xl border border-line bg-paper-alt p-6 flex flex-col items-center justify-center gap-3 text-center hover:border-ink/30 transition-colors"
     >
       <span className="text-ink-soft">{icon}</span>
       <span className="text-sm font-medium">{label}</span>

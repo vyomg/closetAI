@@ -23,7 +23,7 @@ export function MobileHome({ data }: { data: HomeData }) {
         </Link>
       )}
 
-      <div className="grid grid-cols-2 gap-3 mt-6 mb-8">
+      <div className="grid grid-cols-2 gap-3.5 mt-7 mb-9">
         <ActionTile href="/outfits/create?quick=today" icon={<Sparkles className="h-5 w-5" />} label="What should I wear?" emphasize />
         <ActionTile href="/wardrobe/add" icon={<Plus className="h-5 w-5" />} label="Add clothes" />
         <ActionTile href="/pack" icon={<Luggage className="h-5 w-5" />} label="Pack a trip" />
@@ -32,8 +32,8 @@ export function MobileHome({ data }: { data: HomeData }) {
 
       {!hasAppearanceProfile && <StyleProfileNudge compact />}
 
-      <section className="mb-8">
-        <div className="flex items-center justify-between mb-3.5">
+      <section className="mb-9">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="font-display text-xl">Today&apos;s Outfit</h2>
           {todaysOutfit && (
             <Link href="/outfits" className="text-sm text-stone hover:text-ink">
@@ -45,8 +45,8 @@ export function MobileHome({ data }: { data: HomeData }) {
       </section>
 
       {recentItems.length > 0 && (
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-3.5">
+        <section className="mb-9">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-xl">Recently Added</h2>
             <Link href="/wardrobe" className="text-sm text-stone hover:text-ink">
               View all

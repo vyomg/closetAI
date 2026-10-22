@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { comboForStyle, type WheelItem } from "@/lib/publicFashion";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { ArrowRight } from "lucide-react";
 
 // The four outfits that make up the sequence. Computed once (useState lazy
@@ -55,18 +56,20 @@ const STAGE_COPY = [
 export function InfiniteWardrobe() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reducedMotion = useReducedMotion();
   // comboForStyle() is randomized, and a client component's first client
   // render re-runs its initializers independently of what the server
   // already rendered — computing it eagerly (e.g. in useState's own lazy
   // initializer) would pick different garments server-side vs. client-side
   // and fail hydration. Starting empty and filling it in an effect keeps
-  // the first client render identical to the server's.
+  // the first client render identical to the server's. (This one remains
+  // a direct setState-in-effect — unlike the reduced-motion check above,
+  // there's no shared hook to delegate it to: it's this component's own
+  // one-off content, not a duplicated browser-API read.)
   const [outfits, setOutfits] = useState<WheelItem[][]>(() => STYLES.map(() => []));
 
   useEffect(() => {
     setOutfits(STYLES.map((s) => comboForStyle(s)));
-    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let raf = 0;

@@ -354,9 +354,8 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-between text-xs text-white/40 pt-6 border-t border-white/10">
-              <span>© {new Date().getFullYear()} matchin&apos;</span>
-              <span className="lowercase">your wardrobe, matched</span>
+            <div className="flex items-center justify-center text-xs text-white/40 pt-6 border-t border-white/10 lowercase tracking-[0.1em]">
+              your wardrobe, matched
             </div>
           </div>
         </footer>
